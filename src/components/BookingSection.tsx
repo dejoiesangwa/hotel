@@ -1,16 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { CalendarDays, Users, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { format, differenceInDays, eachDayOfInterval, parseISO, isWithinInterval, addDays } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 type Room = { id: string; name: string; price: number; capacity: number };
+type BookedRange = { check_in: string; check_out: string };
 
 const BookingSection = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [form, setForm] = useState({
-    name: "", email: "", phone: "", roomId: "", checkIn: "", checkOut: "", guests: "1", message: "",
+    name: "", email: "", phone: "", roomId: "", checkIn: null as Date | null, checkOut: null as Date | null, guests: "1", message: "",
   });
   const [sending, setSending] = useState(false);
+  const [bookedRanges, setBookedRanges] = useState<BookedRange[]>([]);
 
   useEffect(() => {
     supabase.from("rooms").select("id, name, price, capacity").eq("is_available", true).order("price").then(({ data }) => {
@@ -21,7 +27,42 @@ const BookingSection = () => {
     });
   }, []);
 
+  // Fetch booked dates for selected room
+  useEffect(() => {
+    if (!form.roomId) return;
+    supabase
+      .from("bookings")
+      .select("check_in, check_out")
+      .eq("room_id", form.roomId)
+      .in("status", ["pending", "confirmed"])
+      .then(({ data }) => {
+        setBookedRanges(data || []);
+      });
+    // Reset dates when room changes
+    setForm(f => ({ ...f, checkIn: null, checkOut: null }));
+  }, [form.roomId]);
+
+  const bookedDates = useMemo(() => {
+    const dates: Date[] = [];
+    bookedRanges.forEach(r => {
+      const start = parseISO(r.check_in);
+      const end = parseISO(r.check_out);
+      if (start <= end) {
+        eachDayOfInterval({ start, end: addDays(end, -1) }).forEach(d => dates.push(d));
+      }
+    });
+    return dates;
+  }, [bookedRanges]);
+
+  const isDateBooked = (date: Date) => {
+    return bookedDates.some(d => d.toDateString() === date.toDateString());
+  };
+
   const selectedRoom = rooms.find(r => r.id === form.roomId);
+
+  // Calculate total
+  const nights = form.checkIn && form.checkOut ? differenceInDays(form.checkOut, form.checkIn) : 0;
+  const totalPrice = nights > 0 && selectedRoom ? selectedRoom.price * nights : 0;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -33,6 +74,10 @@ const BookingSection = () => {
       toast.error("Please fill in all required fields.");
       return;
     }
+    if (nights <= 0) {
+      toast.error("Check-out must be after check-in.");
+      return;
+    }
     setSending(true);
     const { error } = await supabase.from("bookings").insert({
       guest_name: form.name,
@@ -40,16 +85,19 @@ const BookingSection = () => {
       guest_phone: form.phone || null,
       room_id: form.roomId,
       room_name: selectedRoom?.name || "",
-      check_in: form.checkIn,
-      check_out: form.checkOut,
+      check_in: format(form.checkIn!, "yyyy-MM-dd"),
+      check_out: format(form.checkOut!, "yyyy-MM-dd"),
       guests: Number(form.guests),
       special_requests: form.message || null,
     });
     setSending(false);
     if (error) { toast.error("Something went wrong. Please try again."); return; }
     toast.success("Booking request sent! The reception will contact you shortly to confirm availability and payment.");
-    setForm({ name: "", email: "", phone: "", roomId: rooms[0]?.id || "", checkIn: "", checkOut: "", guests: "1", message: "" });
+    setForm({ name: "", email: "", phone: "", roomId: rooms[0]?.id || "", checkIn: null, checkOut: null, guests: "1", message: "" });
   };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return (
     <section id="booking" className="py-20 bg-warm-dark">
@@ -101,15 +149,53 @@ const BookingSection = () => {
               <label className="block font-body text-sm font-medium text-foreground mb-1.5 flex items-center gap-1">
                 <CalendarDays className="w-4 h-4 text-gold" /> Check-in *
               </label>
-              <input name="checkIn" type="date" value={form.checkIn} onChange={handleChange} required
-                className="w-full px-4 py-2.5 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button"
+                    className={cn("w-full px-4 py-2.5 rounded-md border border-input bg-background font-body text-sm text-left focus:ring-2 focus:ring-ring focus:outline-none",
+                      form.checkIn ? "text-foreground" : "text-muted-foreground")}>
+                    {form.checkIn ? format(form.checkIn, "MMM dd, yyyy") : "Select date"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.checkIn || undefined}
+                    onSelect={(date) => {
+                      setForm(f => ({ ...f, checkIn: date || null, checkOut: null }));
+                    }}
+                    disabled={(date) => date < today || isDateBooked(date)}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="block font-body text-sm font-medium text-foreground mb-1.5 flex items-center gap-1">
                 <CalendarDays className="w-4 h-4 text-gold" /> Check-out *
               </label>
-              <input name="checkOut" type="date" value={form.checkOut} onChange={handleChange} required
-                className="w-full px-4 py-2.5 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button"
+                    className={cn("w-full px-4 py-2.5 rounded-md border border-input bg-background font-body text-sm text-left focus:ring-2 focus:ring-ring focus:outline-none",
+                      form.checkOut ? "text-foreground" : "text-muted-foreground")}>
+                    {form.checkOut ? format(form.checkOut, "MMM dd, yyyy") : "Select date"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.checkOut || undefined}
+                    onSelect={(date) => setForm(f => ({ ...f, checkOut: date || null }))}
+                    disabled={(date) => {
+                      if (!form.checkIn) return true;
+                      if (date <= form.checkIn) return true;
+                      return isDateBooked(date);
+                    }}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="block font-body text-sm font-medium text-foreground mb-1.5 flex items-center gap-1">
@@ -123,6 +209,19 @@ const BookingSection = () => {
               </select>
             </div>
           </div>
+
+          {/* Total Price Display */}
+          {nights > 0 && selectedRoom && (
+            <div className="bg-secondary/50 rounded-lg p-4 border border-border">
+              <div className="flex items-center justify-between font-body text-sm text-foreground">
+                <span>{selectedRoom.name} × {nights} night{nights > 1 ? "s" : ""}</span>
+                <span className="font-semibold text-lg text-gold">RF {totalPrice.toLocaleString()}</span>
+              </div>
+              <p className="font-body text-xs text-muted-foreground mt-1">
+                RF {selectedRoom.price.toLocaleString()} per night
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="block font-body text-sm font-medium text-foreground mb-1.5">Special Requests</label>
