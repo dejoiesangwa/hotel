@@ -46,10 +46,13 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        <div className="border-t border-gold/10 pt-6 text-center">
+        <div className="border-t border-gold/10 pt-6 flex items-center justify-between">
           <p className="font-body text-xs text-primary-foreground/40">
             © {new Date().getFullYear()} Silver Hotel Kigali. All rights reserved.
           </p>
+          <Link to="/admin/login" className="font-body text-xs text-primary-foreground/30 hover:text-gold transition-colors">
+            Staff Login
+          </Link>
         </div>
       </div>
     </footer>
