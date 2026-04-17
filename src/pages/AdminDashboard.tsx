@@ -153,8 +153,33 @@ const AdminDashboard = () => {
   };
 
   const handleBookingStatus = async (id: string, status: string) => {
-    await supabase.from("bookings").update({ status }).eq("id", id);
+    const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
     toast.success(`Booking ${status}`);
+
+    if (status === "confirmed") {
+      const booking = bookings.find(b => b.id === id);
+      if (booking) {
+        const { error: emailErr } = await supabase.functions.invoke("send-booking-confirmation", {
+          body: {
+            booking: {
+              guest_name: booking.guest_name,
+              guest_email: booking.guest_email,
+              room_name: booking.room_name,
+              check_in: booking.check_in,
+              check_out: booking.check_out,
+              guests: booking.guests,
+              special_requests: booking.special_requests,
+            },
+            hotel_name: settings?.hotel_name,
+            phone: settings?.phone,
+          },
+        });
+        if (emailErr) toast.error("Booking confirmed, but email failed: " + emailErr.message);
+        else toast.success("Confirmation email sent to guest");
+      }
+    }
+
     fetchBookings();
   };
 
