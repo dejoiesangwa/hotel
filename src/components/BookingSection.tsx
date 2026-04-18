@@ -2,10 +2,11 @@ import { useEffect, useState, useMemo } from "react";
 import { CalendarDays, Users, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { format, differenceInDays, eachDayOfInterval, parseISO, isWithinInterval, addDays } from "date-fns";
+import { format, differenceInDays, eachDayOfInterval, parseISO, addDays } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { hotelConfig } from "@/config/hotel";
 
 type Room = { id: string; name: string; price: number; capacity: number };
 type BookedRange = { check_in: string; check_out: string };
@@ -138,7 +139,7 @@ const BookingSection = () => {
               <select name="roomId" value={form.roomId} onChange={handleChange}
                 className="w-full px-4 py-2.5 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none">
                 {rooms.map(r => (
-                  <option key={r.id} value={r.id}>{r.name} — RF {r.price.toLocaleString()}/night</option>
+                  <option key={r.id} value={r.id}>{r.name} — {hotelConfig.currency} {r.price.toLocaleString()}/night</option>
                 ))}
               </select>
             </div>
@@ -215,10 +216,10 @@ const BookingSection = () => {
             <div className="bg-secondary/50 rounded-lg p-4 border border-border">
               <div className="flex items-center justify-between font-body text-sm text-foreground">
                 <span>{selectedRoom.name} × {nights} night{nights > 1 ? "s" : ""}</span>
-                <span className="font-semibold text-lg text-gold">RF {totalPrice.toLocaleString()}</span>
+                <span className="font-semibold text-lg text-gold">{hotelConfig.currency} {totalPrice.toLocaleString()}</span>
               </div>
               <p className="font-body text-xs text-muted-foreground mt-1">
-                RF {selectedRoom.price.toLocaleString()} per night
+                {hotelConfig.currency} {selectedRoom.price.toLocaleString()} per night
               </p>
             </div>
           )}

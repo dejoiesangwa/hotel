@@ -64,16 +64,16 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading, 'Playfair Display', serif);
   }
 }
 
 @layer utilities {
   .font-heading {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading, 'Playfair Display', serif);
   }
   .font-body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body, 'Inter', sans-serif);
   }
   .text-gold {
     color: hsl(var(--gold));
