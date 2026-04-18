@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Menu, X, Phone } from "lucide-react";
+import { hotelConfig } from "@/config/hotel";
 
 const navLinks = [
   { label: "Home", href: "#" },
@@ -16,7 +17,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-warm-dark/90 backdrop-blur-md border-b border-gold/20">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         <a href="#" className="font-heading text-xl font-bold text-primary-foreground">
-          Silver<span className="text-gold"> Hotel</span>
+          {hotelConfig.name}<span className="text-gold"> {hotelConfig.nameSuffix}</span>
         </a>
 
         <div className="hidden md:flex items-center gap-8">
@@ -32,9 +33,9 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-4">
-          <a href="tel:+250781088725" className="flex items-center gap-2 text-gold text-sm font-body">
+          <a href={hotelConfig.phoneHref} className="flex items-center gap-2 text-gold text-sm font-body">
             <Phone className="w-4 h-4" />
-            0781 088 725
+            {hotelConfig.phone}
           </a>
           <a
             href="#booking"

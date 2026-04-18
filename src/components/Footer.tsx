@@ -1,5 +1,6 @@
 import { MapPin, Phone, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { hotelConfig } from "@/config/hotel";
 
 const Footer = () => {
   return (
@@ -8,10 +9,10 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-10 mb-10">
           <div>
             <h3 className="font-heading text-xl font-bold text-primary-foreground mb-3">
-              Silver<span className="text-gold"> Hotel</span>
+              {hotelConfig.name}<span className="text-gold"> {hotelConfig.nameSuffix}</span>
             </h3>
             <p className="font-body text-sm text-primary-foreground/60 leading-relaxed">
-              Your home away from home in the heart of Kigali, Rwanda. Experience comfort, hospitality, and African warmth.
+              {hotelConfig.shortDescription}
             </p>
           </div>
           <div>
@@ -33,22 +34,22 @@ const Footer = () => {
             <div className="space-y-3">
               <p className="flex items-start gap-2 font-body text-sm text-primary-foreground/60">
                 <MapPin className="w-4 h-4 text-gold mt-0.5 flex-shrink-0" />
-                KG 48 St, Kigali, Rwanda
+                {hotelConfig.address}
               </p>
               <p className="flex items-center gap-2 font-body text-sm text-primary-foreground/60">
                 <Phone className="w-4 h-4 text-gold flex-shrink-0" />
-                0781 088 725
+                {hotelConfig.phone}
               </p>
               <p className="flex items-center gap-2 font-body text-sm text-primary-foreground/60">
                 <Mail className="w-4 h-4 text-gold flex-shrink-0" />
-                info@silverhotelkigali.com
+                {hotelConfig.email}
               </p>
             </div>
           </div>
         </div>
         <div className="border-t border-gold/10 pt-6 flex items-center justify-between">
           <p className="font-body text-xs text-primary-foreground/40">
-            © {new Date().getFullYear()} Silver Hotel Kigali. All rights reserved.
+            © {new Date().getFullYear()} {hotelConfig.fullName}. All rights reserved.
           </p>
           <Link to="/admin/login" className="font-body text-xs text-primary-foreground/30 hover:text-gold transition-colors">
             Staff Login
