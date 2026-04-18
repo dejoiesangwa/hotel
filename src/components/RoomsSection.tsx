@@ -40,7 +40,7 @@ const RoomsSection = () => {
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Accommodation</p>
           <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground">Our Rooms</h2>
           <p className="font-body text-muted-foreground mt-3 max-w-lg mx-auto">
-            Each room is designed to offer you the ultimate comfort during your stay in Kigali.
+            Each room is designed to offer you the ultimate comfort during your stay in {hotelConfig.city}.
           </p>
         </div>
 
@@ -56,7 +56,7 @@ const RoomsSection = () => {
                 />
                 <div className="absolute top-4 right-4 gold-gradient px-3 py-1 rounded-full">
                   <span className="font-body text-sm font-semibold text-primary-foreground">
-                    RF {room.price.toLocaleString()}
+                    {hotelConfig.currency} {room.price.toLocaleString()}
                   </span>
                 </div>
               </div>
