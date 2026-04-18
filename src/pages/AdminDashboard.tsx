@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LogOut, Hotel, BedDouble, CalendarDays, Settings, Plus, Pencil, Trash2, Check, X, Users, Eye } from "lucide-react";
+import {
+  LogOut, Hotel, BedDouble, CalendarDays, Settings, Plus, Pencil, Trash2,
+  Check, X, Users, Eye, LogIn, LogOut as CheckOutIcon, Archive,
+} from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
+import { hotelConfig } from "@/config/hotel";
 
 type Room = {
   id: string;
@@ -41,26 +45,27 @@ type HotelSettings = {
 };
 
 const tabs = [
-  { id: "rooms", label: "Rooms", icon: BedDouble },
   { id: "bookings", label: "Bookings", icon: CalendarDays },
+  { id: "guests", label: "Current Guests", icon: Users },
+  { id: "rooms", label: "Rooms", icon: BedDouble },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
+
+type TabId = typeof tabs[number]["id"];
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"rooms" | "bookings" | "settings">("bookings");
+  const [tab, setTab] = useState<TabId>("bookings");
 
-  // Rooms state
   const [rooms, setRooms] = useState<Room[]>([]);
   const [editingRoom, setEditingRoom] = useState<Partial<Room> | null>(null);
   const [roomImageFile, setRoomImageFile] = useState<File | null>(null);
 
-  // Bookings state
   const [bookings, setBookings] = useState<Booking[]>([]);
-
-  // Settings state
   const [settings, setSettings] = useState<HotelSettings | null>(null);
 
   useEffect(() => {
@@ -97,6 +102,23 @@ const AdminDashboard = () => {
     const { data } = await supabase.from("hotel_settings").select("*").limit(1).single();
     if (data) setSettings(data as HotelSettings);
   };
+
+  // ─── Derived: split bookings ─────────────────────────────────
+  // "Current guests" = checked_in OR (confirmed AND today between check_in/check_out)
+  const today = todayStr();
+  const currentGuests = useMemo(() => {
+    return bookings.filter(b => {
+      if (b.status === "checked_in") return true;
+      if (b.status === "confirmed" && b.check_in <= today && today < b.check_out) return true;
+      return false;
+    });
+  }, [bookings, today]);
+
+  // Active bookings shown in "Bookings" tab — exclude archived & checked_out
+  const activeBookings = useMemo(
+    () => bookings.filter(b => b.status !== "archived" && b.status !== "checked_out"),
+    [bookings]
+  );
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -155,7 +177,7 @@ const AdminDashboard = () => {
   const handleBookingStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success(`Booking ${status}`);
+    toast.success(`Booking ${status.replace("_", " ")}`);
 
     if (status === "confirmed") {
       const booking = bookings.find(b => b.id === id);
@@ -171,8 +193,8 @@ const AdminDashboard = () => {
               guests: booking.guests,
               special_requests: booking.special_requests,
             },
-            hotel_name: settings?.hotel_name,
-            phone: settings?.phone,
+            hotel_name: settings?.hotel_name || hotelConfig.fullName,
+            phone: settings?.phone || hotelConfig.phone,
           },
         });
         if (emailErr) toast.error("Booking confirmed, but email failed: " + emailErr.message);
@@ -180,6 +202,14 @@ const AdminDashboard = () => {
       }
     }
 
+    fetchBookings();
+  };
+
+  const handleArchiveBooking = async (id: string, guestName: string) => {
+    if (!confirm(`Delete the booking record for "${guestName}"?\n\nThis archives the record (it stays in the database for audit) and removes it from active lists.`)) return;
+    const { error } = await supabase.from("bookings").update({ status: "archived" }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Booking archived");
     fetchBookings();
   };
 
@@ -198,13 +228,27 @@ const AdminDashboard = () => {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Loading...</p></div>;
 
+  const statusBadge = (status: string) => {
+    const styles: Record<string, string> = {
+      confirmed: "bg-green-100 text-green-800",
+      checked_in: "bg-blue-100 text-blue-800",
+      checked_out: "bg-gray-100 text-gray-700",
+      declined: "bg-red-100 text-red-800",
+      archived: "bg-gray-100 text-gray-500",
+      pending: "bg-yellow-100 text-yellow-800",
+    };
+    return styles[status] || "bg-yellow-100 text-yellow-800";
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-warm-dark border-b border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Hotel className="w-5 h-5 text-gold" />
-          <span className="font-heading text-lg text-primary-foreground font-semibold">Silver Hotel — Reception</span>
+          <span className="font-heading text-lg text-primary-foreground font-semibold">
+            {hotelConfig.name} — Reception
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <a href="/" target="_blank" className="text-primary-foreground/60 hover:text-primary-foreground text-sm font-body flex items-center gap-1">
@@ -223,29 +267,89 @@ const AdminDashboard = () => {
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-md font-body text-sm transition-colors ${tab === t.id ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"}`}>
               <t.icon className="w-4 h-4" /> {t.label}
+              {t.id === "guests" && currentGuests.length > 0 && (
+                <span className="ml-auto bg-gold text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                  {currentGuests.length}
+                </span>
+              )}
             </button>
           ))}
         </nav>
 
         {/* Main Content */}
         <main className="flex-1 p-6 max-w-5xl">
+          {/* CURRENT GUESTS TAB */}
+          {tab === "guests" && (
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Current Guests</h2>
+              <p className="font-body text-sm text-muted-foreground mb-5">
+                Guests currently staying at the hotel — auto-detected from confirmed bookings whose dates include today, plus anyone manually checked in.
+              </p>
+              {currentGuests.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-8 text-center">
+                  <Users className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground font-body">No guests currently in the hotel.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {currentGuests.map(b => (
+                    <div key={b.id} className="bg-card border border-border rounded-lg p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                        <div>
+                          <p className="font-body font-semibold text-foreground">{b.guest_name}</p>
+                          <p className="font-body text-sm text-muted-foreground">
+                            {b.guest_email}{b.guest_phone && ` • ${b.guest_phone}`}
+                          </p>
+                        </div>
+                        <span className={`text-xs font-body font-medium px-2.5 py-1 rounded-full ${statusBadge(b.status)}`}>
+                          {b.status === "checked_in" ? "checked in" : "in-house"}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-4 text-sm font-body text-muted-foreground mb-3">
+                        <span>🛏️ {b.room_name}</span>
+                        <span>📅 {b.check_in} → {b.check_out}</span>
+                        <span>👥 {b.guests} guest{b.guests > 1 ? "s" : ""}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {b.status !== "checked_in" && (
+                          <button onClick={() => handleBookingStatus(b.id, "checked_in")}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-body hover:bg-blue-700">
+                            <LogIn className="w-3 h-3" /> Mark Checked In
+                          </button>
+                        )}
+                        <button onClick={() => handleBookingStatus(b.id, "checked_out")}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-gray-600 text-white rounded-md text-xs font-body hover:bg-gray-700">
+                          <CheckOutIcon className="w-3 h-3" /> Check Out
+                        </button>
+                        <button onClick={() => handleArchiveBooking(b.id, b.guest_name)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-foreground rounded-md text-xs font-body hover:bg-secondary/80 ml-auto">
+                          <Archive className="w-3 h-3" /> Delete Info
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* BOOKINGS TAB */}
           {tab === "bookings" && (
             <div>
               <h2 className="font-heading text-2xl font-bold text-foreground mb-4">Booking Requests</h2>
-              {bookings.length === 0 ? (
+              {activeBookings.length === 0 ? (
                 <p className="text-muted-foreground font-body">No bookings yet.</p>
               ) : (
                 <div className="space-y-3">
-                  {bookings.map(b => (
+                  {activeBookings.map(b => (
                     <div key={b.id} className="bg-card border border-border rounded-lg p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                         <div>
                           <p className="font-body font-semibold text-foreground">{b.guest_name}</p>
                           <p className="font-body text-sm text-muted-foreground">{b.guest_email} {b.guest_phone && `• ${b.guest_phone}`}</p>
                         </div>
-                        <span className={`text-xs font-body font-medium px-2.5 py-1 rounded-full ${b.status === "confirmed" ? "bg-green-100 text-green-800" : b.status === "declined" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}>
-                          {b.status}
+                        <span className={`text-xs font-body font-medium px-2.5 py-1 rounded-full ${statusBadge(b.status)}`}>
+                          {b.status.replace("_", " ")}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-4 text-sm font-body text-muted-foreground mb-2">
@@ -254,18 +358,30 @@ const AdminDashboard = () => {
                         <span>👥 {b.guests} guest{b.guests > 1 ? "s" : ""}</span>
                       </div>
                       {b.special_requests && <p className="text-sm font-body text-muted-foreground italic mb-2">"{b.special_requests}"</p>}
-                      {b.status === "pending" && (
-                        <div className="flex gap-2 mt-2">
-                          <button onClick={() => handleBookingStatus(b.id, "confirmed")}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-md text-xs font-body hover:bg-green-700">
-                            <Check className="w-3 h-3" /> Confirm
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {b.status === "pending" && (
+                          <>
+                            <button onClick={() => handleBookingStatus(b.id, "confirmed")}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-md text-xs font-body hover:bg-green-700">
+                              <Check className="w-3 h-3" /> Confirm
+                            </button>
+                            <button onClick={() => handleBookingStatus(b.id, "declined")}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded-md text-xs font-body hover:bg-red-700">
+                              <X className="w-3 h-3" /> Decline
+                            </button>
+                          </>
+                        )}
+                        {b.status === "confirmed" && (
+                          <button onClick={() => handleBookingStatus(b.id, "checked_in")}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-body hover:bg-blue-700">
+                            <LogIn className="w-3 h-3" /> Mark Checked In
                           </button>
-                          <button onClick={() => handleBookingStatus(b.id, "declined")}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded-md text-xs font-body hover:bg-red-700">
-                            <X className="w-3 h-3" /> Decline
-                          </button>
-                        </div>
-                      )}
+                        )}
+                        <button onClick={() => handleArchiveBooking(b.id, b.guest_name)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-foreground rounded-md text-xs font-body hover:bg-secondary/80 ml-auto">
+                          <Archive className="w-3 h-3" /> Delete Info
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -284,7 +400,6 @@ const AdminDashboard = () => {
                 </button>
               </div>
 
-              {/* Room Edit Form */}
               {editingRoom && (
                 <div className="bg-card border border-border rounded-lg p-5 mb-6 space-y-4">
                   <h3 className="font-heading text-lg font-semibold text-foreground">{editingRoom.id ? "Edit Room" : "Add New Room"}</h3>
@@ -296,7 +411,7 @@ const AdminDashboard = () => {
                         placeholder="e.g. Deluxe Double Room" />
                     </div>
                     <div>
-                      <label className="block font-body text-sm font-medium text-foreground mb-1">Price per Night (RF) *</label>
+                      <label className="block font-body text-sm font-medium text-foreground mb-1">Price per Night ({hotelConfig.currency}) *</label>
                       <input type="number" value={editingRoom.price || ""} onChange={e => setEditingRoom(p => ({ ...p!, price: Number(e.target.value) }))}
                         className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
                         placeholder="30984" />
@@ -343,7 +458,6 @@ const AdminDashboard = () => {
                 </div>
               )}
 
-              {/* Room List */}
               <div className="space-y-3">
                 {rooms.map(room => (
                   <div key={room.id} className="bg-card border border-border rounded-lg p-4 flex flex-col md:flex-row gap-4 items-start">
@@ -357,7 +471,7 @@ const AdminDashboard = () => {
                       </div>
                       <p className="text-sm text-muted-foreground font-body mb-1">{room.description}</p>
                       <div className="flex flex-wrap gap-3 text-xs font-body text-muted-foreground">
-                        <span>💰 RF {room.price.toLocaleString()}/night</span>
+                        <span>💰 {hotelConfig.currency} {room.price.toLocaleString()}/night</span>
                         <span>👥 {room.capacity} {room.capacity === 1 ? "person" : "people"}</span>
                         <span>🛏️ {room.bed_type}</span>
                         {room.features.map(f => <span key={f} className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{f}</span>)}
@@ -376,7 +490,12 @@ const AdminDashboard = () => {
           {/* SETTINGS TAB */}
           {tab === "settings" && settings && (
             <div>
-              <h2 className="font-heading text-2xl font-bold text-foreground mb-4">Hotel Settings</h2>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-2">Hotel Settings</h2>
+              <p className="font-body text-sm text-muted-foreground mb-4">
+                💡 To rebrand the entire site (name, colors, fonts, contact info shown publicly), edit{" "}
+                <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">src/config/hotel.ts</code>.
+                The settings below only affect notification emails and operational defaults.
+              </p>
               <div className="bg-card border border-border rounded-lg p-5 space-y-4 max-w-lg">
                 <div>
                   <label className="block font-body text-sm font-medium text-foreground mb-1">Reception Email</label>
