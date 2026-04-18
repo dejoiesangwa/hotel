@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Users, Bed } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { hotelConfig } from "@/config/hotel";
 import roomDeluxe from "@/assets/room-deluxe.jpg";
 import roomTwin from "@/assets/room-twin.jpg";
 import roomSuite from "@/assets/room-suite.jpg";
