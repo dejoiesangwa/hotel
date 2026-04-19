@@ -3,11 +3,12 @@ import { Menu, X, Phone } from "lucide-react";
 import { hotelConfig } from "@/config/hotel";
 
 const navLinks = [
-  { label: "Home", href: "#" },
-  { label: "Rooms", href: "#rooms" },
-  { label: "Amenities", href: "#amenities" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "/#" },
+  { label: "Rooms", href: "/#rooms" },
+  { label: "Amenities", href: "/#amenities" },
+  { label: "About", href: "/#about" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 const Navbar = () => {
