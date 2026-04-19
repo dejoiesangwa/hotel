@@ -42,6 +42,9 @@ type HotelSettings = {
   phone: string | null;
   check_in_time: string | null;
   check_out_time: string | null;
+  star_rating: number;
+  review_score: number;
+  review_count: number;
 };
 
 const tabs = [
@@ -221,6 +224,9 @@ const AdminDashboard = () => {
       phone: settings.phone,
       check_in_time: settings.check_in_time,
       check_out_time: settings.check_out_time,
+      star_rating: settings.star_rating,
+      review_score: settings.review_score,
+      review_count: settings.review_count,
     }).eq("id", settings.id);
     if (error) toast.error(error.message);
     else toast.success("Settings saved!");
