@@ -1,8 +1,31 @@
+import { useEffect, useState } from "react";
 import { MapPin, Clock, Star, Phone } from "lucide-react";
 import { hotelConfig } from "@/config/hotel";
+import { supabase } from "@/integrations/supabase/client";
 
 const AboutSection = () => {
-  const filledStars = Math.round(hotelConfig.starRating);
+  const [starRating, setStarRating] = useState<number>(hotelConfig.starRating);
+  const [reviewScore, setReviewScore] = useState<number>(hotelConfig.reviewScore);
+  const [reviewCount, setReviewCount] = useState<number>(hotelConfig.reviewCount);
+
+  // Fetch editable ratings from the dashboard settings
+  useEffect(() => {
+    if (!hotelConfig.editableRatings) return;
+    supabase
+      .from("hotel_settings")
+      .select("star_rating, review_score, review_count")
+      .limit(1)
+      .single()
+      .then(({ data }) => {
+        if (!data) return;
+        if (typeof data.star_rating === "number") setStarRating(Number(data.star_rating));
+        if (typeof data.review_score === "number") setReviewScore(Number(data.review_score));
+        if (typeof data.review_count === "number") setReviewCount(Number(data.review_count));
+      });
+  }, []);
+
+  const filledStars = Math.round(starRating);
+
   return (
     <section id="about" className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -19,7 +42,7 @@ const AboutSection = () => {
             <p className="font-body text-muted-foreground leading-relaxed mb-6">
               {hotelConfig.about.paragraph2}
             </p>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               {[1, 2, 3, 4, 5].map((i) => (
                 <Star
                   key={i}
@@ -27,7 +50,7 @@ const AboutSection = () => {
                 />
               ))}
               <span className="font-body text-sm text-muted-foreground ml-2">
-                {hotelConfig.reviewScore} / 5 ({hotelConfig.reviewCount} reviews)
+                {reviewScore.toFixed(1)} / 5 ({reviewCount} reviews)
               </span>
             </div>
           </div>

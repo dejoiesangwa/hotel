@@ -27,9 +27,23 @@ export const hotelConfig = {
     "Experience luxury and comfort in the heart of Africa's most vibrant city. Your perfect stay awaits.",
   shortDescription:
     "Your home away from home in the heart of Kigali, Rwanda. Experience comfort, hospitality, and African warmth.",
+  // Default ratings — overridden at runtime by editable values from the dashboard (hotel_settings table)
   starRating: 3,
   reviewScore: 3.8,
   reviewCount: 87,
+  // When true, ratings shown publicly come from the dashboard (hotel_settings) and can be edited there.
+  editableRatings: true,
+
+  // ─── Map (Location section before footer) ─────────────
+  // Replace src/assets/hotel-map.jpg with a screenshot of your Google Maps location
+  map: {
+    // Optional: lat/lng if you later switch to an embedded interactive map
+    latitude: -1.9499,
+    longitude: 30.0589,
+    zoom: 15,
+    // Path to the static map image shown in the Location section
+    imageUrl: "/src/assets/hotel-map.jpg",
+  },
 
   // ─── Contact ──────────────────────────────────────────
   phone: "0781 088 725",
