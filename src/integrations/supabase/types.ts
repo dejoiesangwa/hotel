@@ -75,6 +75,9 @@ export type Database = {
           id: string
           phone: string | null
           reception_email: string
+          review_count: number
+          review_score: number
+          star_rating: number
           updated_at: string
         }
         Insert: {
@@ -84,6 +87,9 @@ export type Database = {
           id?: string
           phone?: string | null
           reception_email?: string
+          review_count?: number
+          review_score?: number
+          star_rating?: number
           updated_at?: string
         }
         Update: {
@@ -93,6 +99,9 @@ export type Database = {
           id?: string
           phone?: string | null
           reception_email?: string
+          review_count?: number
+          review_score?: number
+          star_rating?: number
           updated_at?: string
         }
         Relationships: []
