@@ -120,6 +120,54 @@ const AdminDashboard = () => {
     if (data) setSettings(data as HotelSettings);
   };
 
+  const fetchGallery = async () => {
+    const { data } = await supabase
+      .from("gallery_images")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (data) setGalleryImages(data as GalleryImage[]);
+  };
+
+  const handleUploadGallery = async () => {
+    if (!galleryFile) { toast.error("Pick an image first."); return; }
+    setGalleryUploading(true);
+    try {
+      const ext = galleryFile.name.split(".").pop();
+      const path = `${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("gallery-images")
+        .upload(path, galleryFile);
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("gallery-images").getPublicUrl(path);
+      const { error: insErr } = await supabase.from("gallery_images").insert({
+        image_url: urlData.publicUrl,
+        caption: galleryCaption || null,
+        sort_order: galleryImages.length,
+      });
+      if (insErr) throw insErr;
+      toast.success("Photo added to gallery");
+      setGalleryFile(null);
+      setGalleryCaption("");
+      fetchGallery();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      toast.error(msg);
+    } finally {
+      setGalleryUploading(false);
+    }
+  };
+
+  const handleDeleteGalleryImage = async (id: string, image_url: string) => {
+    if (!confirm("Remove this photo from the gallery?")) return;
+    await supabase.from("gallery_images").delete().eq("id", id);
+    // Best-effort delete from storage
+    const fileName = image_url.split("/").pop();
+    if (fileName) await supabase.storage.from("gallery-images").remove([fileName]);
+    toast.success("Photo removed");
+    fetchGallery();
+  };
+
   // ─── Derived: split bookings ─────────────────────────────────
   // "Current guests" = checked_in OR (confirmed AND today between check_in/check_out)
   const today = todayStr();
