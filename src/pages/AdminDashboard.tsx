@@ -4,10 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   LogOut, Hotel, BedDouble, CalendarDays, Settings, Plus, Pencil, Trash2,
-  Check, X, Users, Eye, LogIn, LogOut as CheckOutIcon, Archive,
+  Check, X, Users, Eye, LogIn, LogOut as CheckOutIcon, Archive, Image as ImageIcon,
 } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { hotelConfig } from "@/config/hotel";
+
+type GalleryImage = {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  sort_order: number;
+};
 
 type Room = {
   id: string;
@@ -51,6 +58,7 @@ const tabs = [
   { id: "bookings", label: "Bookings", icon: CalendarDays },
   { id: "guests", label: "Current Guests", icon: Users },
   { id: "rooms", label: "Rooms", icon: BedDouble },
+  { id: "gallery", label: "Gallery", icon: ImageIcon },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -71,6 +79,11 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [settings, setSettings] = useState<HotelSettings | null>(null);
 
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [galleryFile, setGalleryFile] = useState<File | null>(null);
+  const [galleryCaption, setGalleryCaption] = useState("");
+  const [galleryUploading, setGalleryUploading] = useState(false);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/admin/login"); return; }
@@ -89,6 +102,7 @@ const AdminDashboard = () => {
     fetchRooms();
     fetchBookings();
     fetchSettings();
+    fetchGallery();
   }, [session]);
 
   const fetchRooms = async () => {
