@@ -533,6 +533,36 @@ const AdminDashboard = () => {
                       placeholder="11:00" />
                   </div>
                 </div>
+
+                {/* Editable ratings shown publicly on the About section */}
+                <div className="pt-2 border-t border-border">
+                  <p className="font-body text-sm font-semibold text-foreground mb-1">Public Ratings</p>
+                  <p className="text-xs text-muted-foreground font-body mb-3">Shown on the About section of your website.</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block font-body text-xs font-medium text-foreground mb-1">Star Rating</label>
+                      <input type="number" min={1} max={5} step={1}
+                        value={settings.star_rating ?? 0}
+                        onChange={e => setSettings(p => p ? { ...p, star_rating: Number(e.target.value) } : p)}
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block font-body text-xs font-medium text-foreground mb-1">Review Score</label>
+                      <input type="number" min={0} max={5} step={0.1}
+                        value={settings.review_score ?? 0}
+                        onChange={e => setSettings(p => p ? { ...p, review_score: Number(e.target.value) } : p)}
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block font-body text-xs font-medium text-foreground mb-1"># of Reviews</label>
+                      <input type="number" min={0} step={1}
+                        value={settings.review_count ?? 0}
+                        onChange={e => setSettings(p => p ? { ...p, review_count: Number(e.target.value) } : p)}
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
+                    </div>
+                  </div>
+                </div>
+
                 <button onClick={handleSaveSettings} className="gold-gradient px-5 py-2 rounded-md font-body text-sm font-medium text-primary-foreground hover:opacity-90">
                   Save Settings
                 </button>
