@@ -555,6 +555,71 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* GALLERY TAB */}
+          {tab === "gallery" && (
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Gallery</h2>
+              <p className="font-body text-sm text-muted-foreground mb-5">
+                Upload photos to display on the public Gallery page.
+              </p>
+
+              <div className="bg-card border border-border rounded-lg p-5 space-y-4 max-w-lg mb-6">
+                <div>
+                  <label className="block font-body text-sm font-medium text-foreground mb-1">Photo</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => setGalleryFile(e.target.files?.[0] || null)}
+                    className="w-full font-body text-sm text-foreground file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-secondary file:text-secondary-foreground file:font-medium file:cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="block font-body text-sm font-medium text-foreground mb-1">Caption (optional)</label>
+                  <input
+                    value={galleryCaption}
+                    onChange={e => setGalleryCaption(e.target.value)}
+                    placeholder="e.g. Lobby at sunset"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+                  />
+                </div>
+                <button
+                  onClick={handleUploadGallery}
+                  disabled={galleryUploading || !galleryFile}
+                  className="gold-gradient px-5 py-2 rounded-md font-body text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+                >
+                  {galleryUploading ? "Uploading…" : "Add Photo"}
+                </button>
+              </div>
+
+              {galleryImages.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-8 text-center">
+                  <ImageIcon className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground font-body">No photos yet. Add the first one above.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {galleryImages.map(img => (
+                    <div key={img.id} className="group relative aspect-square overflow-hidden rounded-lg bg-secondary">
+                      <img src={img.image_url} alt={img.caption || "Gallery photo"} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => handleDeleteGalleryImage(img.id, img.image_url)}
+                        className="absolute top-2 right-2 p-1.5 rounded-md bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Delete photo"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      {img.caption && (
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                          <p className="font-body text-xs text-white truncate">{img.caption}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* SETTINGS TAB */}
           {tab === "settings" && settings && (
             <div>
