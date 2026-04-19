@@ -4,10 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   LogOut, Hotel, BedDouble, CalendarDays, Settings, Plus, Pencil, Trash2,
-  Check, X, Users, Eye, LogIn, LogOut as CheckOutIcon, Archive,
+  Check, X, Users, Eye, LogIn, LogOut as CheckOutIcon, Archive, Image as ImageIcon,
 } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { hotelConfig } from "@/config/hotel";
+
+type GalleryImage = {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  sort_order: number;
+};
 
 type Room = {
   id: string;
@@ -51,6 +58,7 @@ const tabs = [
   { id: "bookings", label: "Bookings", icon: CalendarDays },
   { id: "guests", label: "Current Guests", icon: Users },
   { id: "rooms", label: "Rooms", icon: BedDouble },
+  { id: "gallery", label: "Gallery", icon: ImageIcon },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -71,6 +79,11 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [settings, setSettings] = useState<HotelSettings | null>(null);
 
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [galleryFile, setGalleryFile] = useState<File | null>(null);
+  const [galleryCaption, setGalleryCaption] = useState("");
+  const [galleryUploading, setGalleryUploading] = useState(false);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/admin/login"); return; }
@@ -89,6 +102,7 @@ const AdminDashboard = () => {
     fetchRooms();
     fetchBookings();
     fetchSettings();
+    fetchGallery();
   }, [session]);
 
   const fetchRooms = async () => {
@@ -104,6 +118,54 @@ const AdminDashboard = () => {
   const fetchSettings = async () => {
     const { data } = await supabase.from("hotel_settings").select("*").limit(1).single();
     if (data) setSettings(data as HotelSettings);
+  };
+
+  const fetchGallery = async () => {
+    const { data } = await supabase
+      .from("gallery_images")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (data) setGalleryImages(data as GalleryImage[]);
+  };
+
+  const handleUploadGallery = async () => {
+    if (!galleryFile) { toast.error("Pick an image first."); return; }
+    setGalleryUploading(true);
+    try {
+      const ext = galleryFile.name.split(".").pop();
+      const path = `${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("gallery-images")
+        .upload(path, galleryFile);
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("gallery-images").getPublicUrl(path);
+      const { error: insErr } = await supabase.from("gallery_images").insert({
+        image_url: urlData.publicUrl,
+        caption: galleryCaption || null,
+        sort_order: galleryImages.length,
+      });
+      if (insErr) throw insErr;
+      toast.success("Photo added to gallery");
+      setGalleryFile(null);
+      setGalleryCaption("");
+      fetchGallery();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      toast.error(msg);
+    } finally {
+      setGalleryUploading(false);
+    }
+  };
+
+  const handleDeleteGalleryImage = async (id: string, image_url: string) => {
+    if (!confirm("Remove this photo from the gallery?")) return;
+    await supabase.from("gallery_images").delete().eq("id", id);
+    // Best-effort delete from storage
+    const fileName = image_url.split("/").pop();
+    if (fileName) await supabase.storage.from("gallery-images").remove([fileName]);
+    toast.success("Photo removed");
+    fetchGallery();
   };
 
   // ─── Derived: split bookings ─────────────────────────────────
@@ -493,25 +555,80 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* GALLERY TAB */}
+          {tab === "gallery" && (
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Gallery</h2>
+              <p className="font-body text-sm text-muted-foreground mb-5">
+                Upload photos to display on the public Gallery page.
+              </p>
+
+              <div className="bg-card border border-border rounded-lg p-5 space-y-4 max-w-lg mb-6">
+                <div>
+                  <label className="block font-body text-sm font-medium text-foreground mb-1">Photo</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => setGalleryFile(e.target.files?.[0] || null)}
+                    className="w-full font-body text-sm text-foreground file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-secondary file:text-secondary-foreground file:font-medium file:cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="block font-body text-sm font-medium text-foreground mb-1">Caption (optional)</label>
+                  <input
+                    value={galleryCaption}
+                    onChange={e => setGalleryCaption(e.target.value)}
+                    placeholder="e.g. Lobby at sunset"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+                  />
+                </div>
+                <button
+                  onClick={handleUploadGallery}
+                  disabled={galleryUploading || !galleryFile}
+                  className="gold-gradient px-5 py-2 rounded-md font-body text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+                >
+                  {galleryUploading ? "Uploading…" : "Add Photo"}
+                </button>
+              </div>
+
+              {galleryImages.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-8 text-center">
+                  <ImageIcon className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground font-body">No photos yet. Add the first one above.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {galleryImages.map(img => (
+                    <div key={img.id} className="group relative aspect-square overflow-hidden rounded-lg bg-secondary">
+                      <img src={img.image_url} alt={img.caption || "Gallery photo"} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => handleDeleteGalleryImage(img.id, img.image_url)}
+                        className="absolute top-2 right-2 p-1.5 rounded-md bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Delete photo"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      {img.caption && (
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                          <p className="font-body text-xs text-white truncate">{img.caption}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* SETTINGS TAB */}
           {tab === "settings" && settings && (
             <div>
-              <h2 className="font-heading text-2xl font-bold text-foreground mb-2">Hotel Settings</h2>
-              <p className="font-body text-sm text-muted-foreground mb-4">
-                💡 To rebrand the entire site (name, colors, fonts, contact info shown publicly), edit{" "}
-                <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">src/config/hotel.ts</code>.
-                The settings below only affect notification emails and operational defaults.
-              </p>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-4">Hotel Settings</h2>
               <div className="bg-card border border-border rounded-lg p-5 space-y-4 max-w-lg">
                 <div>
                   <label className="block font-body text-sm font-medium text-foreground mb-1">Reception Email</label>
                   <p className="text-xs text-muted-foreground font-body mb-1.5">Booking notifications are sent to this email</p>
                   <input value={settings.reception_email} onChange={e => setSettings(p => p ? { ...p, reception_email: e.target.value } : p)}
-                    className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block font-body text-sm font-medium text-foreground mb-1">Hotel Name</label>
-                  <input value={settings.hotel_name} onChange={e => setSettings(p => p ? { ...p, hotel_name: e.target.value } : p)}
                     className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
                 </div>
                 <div>
