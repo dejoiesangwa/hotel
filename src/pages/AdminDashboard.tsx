@@ -558,22 +558,12 @@ const AdminDashboard = () => {
           {/* SETTINGS TAB */}
           {tab === "settings" && settings && (
             <div>
-              <h2 className="font-heading text-2xl font-bold text-foreground mb-2">Hotel Settings</h2>
-              <p className="font-body text-sm text-muted-foreground mb-4">
-                💡 To rebrand the entire site (name, colors, fonts, contact info shown publicly), edit{" "}
-                <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">src/config/hotel.ts</code>.
-                The settings below only affect notification emails and operational defaults.
-              </p>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-4">Hotel Settings</h2>
               <div className="bg-card border border-border rounded-lg p-5 space-y-4 max-w-lg">
                 <div>
                   <label className="block font-body text-sm font-medium text-foreground mb-1">Reception Email</label>
                   <p className="text-xs text-muted-foreground font-body mb-1.5">Booking notifications are sent to this email</p>
                   <input value={settings.reception_email} onChange={e => setSettings(p => p ? { ...p, reception_email: e.target.value } : p)}
-                    className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block font-body text-sm font-medium text-foreground mb-1">Hotel Name</label>
-                  <input value={settings.hotel_name} onChange={e => setSettings(p => p ? { ...p, hotel_name: e.target.value } : p)}
                     className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
                 </div>
                 <div>
