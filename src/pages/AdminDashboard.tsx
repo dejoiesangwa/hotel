@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   LogOut, Hotel, BedDouble, CalendarDays, Settings, Plus, Pencil, Trash2,
-  Check, X, Users, Eye, LogIn, LogOut as CheckOutIcon, Archive, Image as ImageIcon,
+  Check, X, Users, ArrowLeft, LogIn, LogOut as CheckOutIcon, Archive, Image as ImageIcon, History,
 } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { hotelConfig } from "@/config/hotel";
@@ -57,6 +57,7 @@ type HotelSettings = {
 const tabs = [
   { id: "bookings", label: "Bookings", icon: CalendarDays },
   { id: "guests", label: "Current Guests", icon: Users },
+  { id: "history", label: "History", icon: History },
   { id: "rooms", label: "Rooms", icon: BedDouble },
   { id: "gallery", label: "Gallery", icon: ImageIcon },
   { id: "settings", label: "Settings", icon: Settings },
@@ -182,6 +183,12 @@ const AdminDashboard = () => {
   // Active bookings shown in "Bookings" tab — exclude archived & checked_out
   const activeBookings = useMemo(
     () => bookings.filter(b => b.status !== "archived" && b.status !== "checked_out"),
+    [bookings]
+  );
+
+  // Guest history — anyone who checked out OR was archived. Newest first.
+  const historyBookings = useMemo(
+    () => bookings.filter(b => b.status === "checked_out" || b.status === "archived"),
     [bookings]
   );
 
@@ -321,8 +328,8 @@ const AdminDashboard = () => {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/" target="_blank" className="text-primary-foreground/60 hover:text-primary-foreground text-sm font-body flex items-center gap-1">
-            <Eye className="w-4 h-4" /> View Website
+          <a href="/" className="text-primary-foreground/60 hover:text-primary-foreground text-sm font-body flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Back to Website
           </a>
           <button onClick={handleLogout} className="text-primary-foreground/60 hover:text-primary-foreground text-sm font-body flex items-center gap-1">
             <LogOut className="w-4 h-4" /> Sign Out
@@ -403,7 +410,58 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* BOOKINGS TAB */}
+          {/* HISTORY TAB */}
+          {tab === "history" && (
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Guest History</h2>
+              <p className="font-body text-sm text-muted-foreground mb-5">
+                All past guests — automatically saved here once a guest is checked out or their booking is archived.
+              </p>
+              {historyBookings.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-8 text-center">
+                  <History className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground font-body">No guest history yet.</p>
+                </div>
+              ) : (
+                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm font-body">
+                      <thead className="bg-secondary text-foreground">
+                        <tr>
+                          <th className="text-left px-4 py-2.5 font-medium">Guest</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Email</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Phone</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Room</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Check-in</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Check-out</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Guests</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {historyBookings.map(b => (
+                          <tr key={b.id} className="border-t border-border hover:bg-secondary/50">
+                            <td className="px-4 py-2.5 text-foreground font-medium">{b.guest_name}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.guest_email}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.guest_phone || "—"}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.room_name}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.check_in}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.check_out}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.guests}</td>
+                            <td className="px-4 py-2.5">
+                              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusBadge(b.status)}`}>
+                                {b.status.replace("_", " ")}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {tab === "bookings" && (
             <div>
               <h2 className="font-heading text-2xl font-bold text-foreground mb-4">Booking Requests</h2>

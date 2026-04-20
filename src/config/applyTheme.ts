@@ -31,6 +31,8 @@ export function applyHotelTheme() {
     "--gold-dark": colors.goldDark,
     "--warm-dark": colors.warmDark,
     "--warm-bg": colors.warmBg,
+    "--nav-link": colors.navLink,
+    "--nav-link-hover": colors.navLinkHover,
   };
 
   Object.entries(map).forEach(([k, v]) => root.style.setProperty(k, v));
