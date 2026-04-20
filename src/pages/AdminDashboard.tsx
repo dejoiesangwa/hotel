@@ -793,6 +793,187 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* TESTIMONIALS TAB */}
+          {tab === "testimonials" && (
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Guest Reviews</h2>
+              <p className="font-body text-sm text-muted-foreground mb-5">
+                Approve reviews to publish them on the website. Pending reviews are hidden from the public.
+              </p>
+              {testimonials.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-8 text-center">
+                  <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground font-body">No reviews submitted yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {testimonials.map((t) => (
+                    <div key={t.id} className="bg-card border border-border rounded-lg p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                        <div>
+                          <p className="font-body font-semibold text-foreground">{t.guest_name}</p>
+                          {t.guest_email && <p className="font-body text-xs text-muted-foreground">{t.guest_email}</p>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} className={`w-4 h-4 ${i < t.rating ? "fill-gold text-gold" : "text-muted-foreground/30"}`} />
+                            ))}
+                          </div>
+                          <span className={`text-xs font-body font-medium px-2.5 py-1 rounded-full ${t.is_approved ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                            {t.is_approved ? "Published" : "Pending"}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="font-body text-sm text-foreground italic mb-3">"{t.message}"</p>
+                      <div className="flex flex-wrap gap-2">
+                        {t.is_approved ? (
+                          <button onClick={() => setTestimonialApproval(t.id, false)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-foreground rounded-md text-xs font-body hover:bg-secondary/80">
+                            <X className="w-3 h-3" /> Unpublish
+                          </button>
+                        ) : (
+                          <button onClick={() => setTestimonialApproval(t.id, true)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-md text-xs font-body hover:bg-green-700">
+                            <Check className="w-3 h-3" /> Approve & Publish
+                          </button>
+                        )}
+                        <button onClick={() => deleteTestimonial(t.id)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-foreground rounded-md text-xs font-body hover:bg-secondary/80 ml-auto">
+                          <Trash2 className="w-3 h-3" /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* MENU TAB */}
+          {tab === "menu" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading text-2xl font-bold text-foreground">Restaurant Menu</h2>
+                <button onClick={() => setEditingItem({ name: "", description: "", price: 0, category_id: menuCategories[0]?.id || null, is_special: false, is_available: true })}
+                  className="flex items-center gap-1.5 gold-gradient px-4 py-2 rounded-md font-body text-sm font-medium text-primary-foreground hover:opacity-90">
+                  <Plus className="w-4 h-4" /> Add Item
+                </button>
+              </div>
+
+              {/* Categories management */}
+              <div className="bg-card border border-border rounded-lg p-4 mb-5">
+                <p className="font-body text-sm font-semibold text-foreground mb-2">Categories</p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {menuCategories.map((c) => (
+                    <span key={c.id} className="inline-flex items-center gap-1.5 bg-secondary text-foreground px-3 py-1 rounded-full text-xs font-body">
+                      {c.name}
+                      <button onClick={() => deleteMenuCategory(c.id)} aria-label={`Delete ${c.name}`}>
+                        <X className="w-3 h-3 text-muted-foreground hover:text-destructive" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="New category name"
+                    className="flex-1 px-3 py-1.5 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
+                  <button onClick={addMenuCategory}
+                    className="px-3 py-1.5 bg-secondary text-foreground rounded-md text-xs font-body hover:bg-secondary/80">
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {editingItem && (
+                <div className="bg-card border border-border rounded-lg p-5 mb-6 space-y-4">
+                  <h3 className="font-heading text-lg font-semibold text-foreground">{editingItem.id ? "Edit Item" : "Add New Item"}</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-body text-sm font-medium text-foreground mb-1">Item Name *</label>
+                      <input value={editingItem.name || ""} onChange={(e) => setEditingItem((p) => ({ ...p!, name: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+                        placeholder="e.g. Grilled Tilapia" />
+                    </div>
+                    <div>
+                      <label className="block font-body text-sm font-medium text-foreground mb-1">Price ({hotelConfig.currency}) *</label>
+                      <input type="number" value={editingItem.price ?? ""} onChange={(e) => setEditingItem((p) => ({ ...p!, price: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block font-body text-sm font-medium text-foreground mb-1">Category</label>
+                      <select value={editingItem.category_id || ""} onChange={(e) => setEditingItem((p) => ({ ...p!, category_id: e.target.value || null }))}
+                        className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none">
+                        <option value="">— Uncategorized —</option>
+                        {menuCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-body text-sm font-medium text-foreground mb-1">Photo (optional)</label>
+                      <input type="file" accept="image/*" onChange={(e) => setMenuImageFile(e.target.files?.[0] || null)}
+                        className="w-full font-body text-sm text-foreground file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-secondary file:text-secondary-foreground file:font-medium file:cursor-pointer" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-body text-sm font-medium text-foreground mb-1">Description</label>
+                    <textarea value={editingItem.description || ""} onChange={(e) => setEditingItem((p) => ({ ...p!, description: e.target.value }))} rows={2}
+                      className="w-full px-3 py-2 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none resize-none" />
+                  </div>
+                  <div className="flex items-center gap-5">
+                    <label className="flex items-center gap-2 font-body text-sm text-foreground">
+                      <input type="checkbox" checked={editingItem.is_special ?? false} onChange={(e) => setEditingItem((p) => ({ ...p!, is_special: e.target.checked }))} />
+                      <Sparkles className="w-4 h-4 text-gold" /> Daily Special
+                    </label>
+                    <label className="flex items-center gap-2 font-body text-sm text-foreground">
+                      <input type="checkbox" checked={editingItem.is_available ?? true} onChange={(e) => setEditingItem((p) => ({ ...p!, is_available: e.target.checked }))} />
+                      Available
+                    </label>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={handleSaveMenuItem} className="gold-gradient px-5 py-2 rounded-md font-body text-sm font-medium text-primary-foreground hover:opacity-90">Save Item</button>
+                    <button onClick={() => { setEditingItem(null); setMenuImageFile(null); }} className="px-5 py-2 rounded-md border border-border font-body text-sm text-foreground hover:bg-secondary">Cancel</button>
+                  </div>
+                </div>
+              )}
+
+              {menuItems.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-8 text-center">
+                  <UtensilsCrossed className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground font-body">No menu items yet. Add the first one above.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {menuItems.map((item) => {
+                    const cat = menuCategories.find((c) => c.id === item.category_id);
+                    return (
+                      <div key={item.id} className="bg-card border border-border rounded-lg p-4 flex gap-4 items-start">
+                        {item.image_url && (
+                          <img src={item.image_url} alt={item.name} className="w-20 h-20 object-cover rounded-md flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h3 className="font-body font-semibold text-foreground">{item.name}</h3>
+                            {item.is_special && <span className="text-xs bg-gold/20 text-gold-dark px-2 py-0.5 rounded-full font-body">Special</span>}
+                            {!item.is_available && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-body">Unavailable</span>}
+                          </div>
+                          <p className="text-sm text-muted-foreground font-body mb-1">{item.description}</p>
+                          <div className="flex flex-wrap gap-3 text-xs font-body text-muted-foreground">
+                            <span>💰 {hotelConfig.currency} {item.price.toLocaleString()}</span>
+                            {cat && <span>🏷️ {cat.name}</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button onClick={() => setEditingItem(item)} className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-secondary"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => deleteMenuItem(item.id)} className="p-2 text-muted-foreground hover:text-destructive rounded-md hover:bg-secondary"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* SETTINGS TAB */}
           {tab === "settings" && settings && (
             <div>
