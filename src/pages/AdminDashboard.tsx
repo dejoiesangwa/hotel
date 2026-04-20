@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   LogOut, Hotel, BedDouble, CalendarDays, Settings, Plus, Pencil, Trash2,
   Check, X, Users, ArrowLeft, LogIn, LogOut as CheckOutIcon, Archive, Image as ImageIcon, History,
+  Star, MessageSquare, UtensilsCrossed, Sparkles,
 } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { hotelConfig } from "@/config/hotel";
@@ -60,6 +61,8 @@ const tabs = [
   { id: "history", label: "History", icon: History },
   { id: "rooms", label: "Rooms", icon: BedDouble },
   { id: "gallery", label: "Gallery", icon: ImageIcon },
+  { id: "testimonials", label: "Reviews", icon: MessageSquare },
+  { id: "menu", label: "Menu", icon: UtensilsCrossed },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 
