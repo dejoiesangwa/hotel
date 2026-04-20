@@ -103,6 +103,9 @@ export const hotelConfig = {
       // Dark warm tone — used on Navbar, Footer, Booking section background
       warmDark: "25 30% 8%",
       warmBg: "30 25% 95%",
+      // Color of the navigation bar links (Home, Rooms, Amenities, etc.)
+      navLink: "0 0% 75%", // silver
+      navLinkHover: "36 65% 45%", // gold on hover
     },
     // Fonts — must be loaded in src/index.css via @import url(...)
     fonts: {
