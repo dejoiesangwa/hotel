@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
 
-    const { booking, hotel_name, phone } = await req.json();
+    const { booking, hotel_name, phone, reception_email } = await req.json();
 
     if (!booking?.guest_email || !booking?.guest_name) {
       return new Response(JSON.stringify({ error: "Missing booking fields" }), {
@@ -65,30 +65,83 @@ Deno.serve(async (req) => {
       });
     }
 
-    const html = renderEmail(booking, hotel_name || "Silver Hotel Kigali", phone || "");
+    const hotelName = hotel_name || "Silver Hotel Kigali";
+    const html = renderEmail(booking, hotelName, phone || "");
 
-    const response = await fetch(`${GATEWAY_URL}/emails`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": RESEND_API_KEY,
-      },
-      body: JSON.stringify({
-        from: `${hotel_name || "Silver Hotel Kigali"} <onboarding@resend.dev>`,
-        to: [booking.guest_email],
-        subject: `Booking Confirmed — ${booking.room_name}`,
-        html,
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      console.error("Resend error:", data);
-      throw new Error(`Resend API error [${response.status}]: ${JSON.stringify(data)}`);
+    // Build recipient list: guest + reception (if configured)
+    const recipients = [booking.guest_email];
+    if (reception_email && reception_email !== booking.guest_email) {
+      recipients.push(reception_email);
     }
 
-    return new Response(JSON.stringify({ success: true, id: data.id }), {
+    const sendEmail = async (to: string[], subject: string, htmlBody: string) => {
+      const r = await fetch(`${GATEWAY_URL}/emails`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "X-Connection-Api-Key": RESEND_API_KEY,
+        },
+        body: JSON.stringify({
+          from: `${hotelName} <onboarding@resend.dev>`,
+          to,
+          subject,
+          html: htmlBody,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        console.error("Resend error:", d);
+        throw new Error(`Resend API error [${r.status}]: ${JSON.stringify(d)}`);
+      }
+      return d;
+    };
+
+    // 1. Send confirmation to guest
+    const guestData = await sendEmail(
+      [booking.guest_email],
+      `Booking Confirmed — ${booking.room_name}`,
+      html,
+    );
+
+    // 2. Send notification to reception (if configured)
+    if (reception_email && reception_email !== booking.guest_email) {
+      const receptionHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background:#ffffff; color:#1a1a1a;">
+          <div style="background:#1a1a1a; padding: 24px; text-align:center;">
+            <h1 style="color:#d4af37; margin:0; font-size:20px; letter-spacing:2px;">NEW BOOKING REQUEST</h1>
+            <p style="color:#ffffff; margin:6px 0 0; font-size:12px; letter-spacing:2px;">${hotelName.toUpperCase()}</p>
+          </div>
+          <div style="padding: 25px;">
+            <p style="font-size:15px;">A new booking request has been received.</p>
+            <div style="background:#faf7f0; border-left:3px solid #d4af37; padding:18px; margin:20px 0; border-radius:4px;">
+              <table style="width:100%; font-size:14px;">
+                <tr><td style="padding:5px 0; color:#666;">Guest:</td><td style="padding:5px 0; font-weight:600;">${booking.guest_name}</td></tr>
+                <tr><td style="padding:5px 0; color:#666;">Email:</td><td style="padding:5px 0; font-weight:600;">${booking.guest_email}</td></tr>
+                ${booking.guest_phone ? `<tr><td style="padding:5px 0; color:#666;">Phone:</td><td style="padding:5px 0; font-weight:600;">${booking.guest_phone}</td></tr>` : ""}
+                <tr><td style="padding:5px 0; color:#666;">Room:</td><td style="padding:5px 0; font-weight:600;">${booking.room_name}</td></tr>
+                <tr><td style="padding:5px 0; color:#666;">Check-in:</td><td style="padding:5px 0; font-weight:600;">${booking.check_in}</td></tr>
+                <tr><td style="padding:5px 0; color:#666;">Check-out:</td><td style="padding:5px 0; font-weight:600;">${booking.check_out}</td></tr>
+                <tr><td style="padding:5px 0; color:#666;">Guests:</td><td style="padding:5px 0; font-weight:600;">${booking.guests}</td></tr>
+                ${booking.special_requests ? `<tr><td style="padding:5px 0; color:#666; vertical-align:top;">Notes:</td><td style="padding:5px 0;">${booking.special_requests}</td></tr>` : ""}
+              </table>
+            </div>
+            <p style="font-size:13px; color:#666;">Please contact the guest to confirm availability and payment.</p>
+          </div>
+        </div>
+      `;
+      try {
+        await sendEmail(
+          [reception_email],
+          `🔔 New Booking — ${booking.guest_name} (${booking.room_name})`,
+          receptionHtml,
+        );
+      } catch (e) {
+        console.error("Failed to notify reception:", e);
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, id: guestData.id }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
