@@ -410,7 +410,58 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* BOOKINGS TAB */}
+          {/* HISTORY TAB */}
+          {tab === "history" && (
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Guest History</h2>
+              <p className="font-body text-sm text-muted-foreground mb-5">
+                All past guests — automatically saved here once a guest is checked out or their booking is archived.
+              </p>
+              {historyBookings.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-8 text-center">
+                  <History className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground font-body">No guest history yet.</p>
+                </div>
+              ) : (
+                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm font-body">
+                      <thead className="bg-secondary text-foreground">
+                        <tr>
+                          <th className="text-left px-4 py-2.5 font-medium">Guest</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Email</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Phone</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Room</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Check-in</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Check-out</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Guests</th>
+                          <th className="text-left px-4 py-2.5 font-medium">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {historyBookings.map(b => (
+                          <tr key={b.id} className="border-t border-border hover:bg-secondary/50">
+                            <td className="px-4 py-2.5 text-foreground font-medium">{b.guest_name}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.guest_email}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.guest_phone || "—"}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.room_name}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.check_in}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.check_out}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground">{b.guests}</td>
+                            <td className="px-4 py-2.5">
+                              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusBadge(b.status)}`}>
+                                {b.status.replace("_", " ")}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {tab === "bookings" && (
             <div>
               <h2 className="font-heading text-2xl font-bold text-foreground mb-4">Booking Requests</h2>
