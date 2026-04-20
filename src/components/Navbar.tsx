@@ -26,7 +26,7 @@ const Navbar = () => {
             <a
               key={l.label}
               href={l.href}
-              className="font-body text-sm text-primary-foreground/80 hover:text-gold transition-colors tracking-wide"
+              className="font-body text-sm text-nav-link hover:text-nav-link-hover transition-colors tracking-wide"
             >
               {l.label}
             </a>
@@ -62,7 +62,7 @@ const Navbar = () => {
               key={l.label}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="block py-3 font-body text-primary-foreground/80 hover:text-gold transition-colors border-b border-gold/10"
+              className="block py-3 font-body text-nav-link hover:text-nav-link-hover transition-colors border-b border-gold/10"
             >
               {l.label}
             </a>

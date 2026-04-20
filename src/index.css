@@ -42,6 +42,8 @@
     --warm-bg: 30 25% 95%;
     --warm-dark: 25 30% 8%;
     --warm-overlay: 25 30% 8%;
+    --nav-link: 0 0% 75%;
+    --nav-link-hover: 36 65% 45%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -89,6 +91,12 @@
   }
   .border-gold {
     border-color: hsl(var(--gold));
+  }
+  .text-nav-link {
+    color: hsl(var(--nav-link));
+  }
+  .hover\:text-nav-link-hover:hover {
+    color: hsl(var(--nav-link-hover));
   }
   .gold-gradient {
     background: linear-gradient(135deg, hsl(36 65% 45%), hsl(36 60% 60%));

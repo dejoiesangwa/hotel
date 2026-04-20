@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   LogOut, Hotel, BedDouble, CalendarDays, Settings, Plus, Pencil, Trash2,
-  Check, X, Users, Eye, LogIn, LogOut as CheckOutIcon, Archive, Image as ImageIcon,
+  Check, X, Users, ArrowLeft, LogIn, LogOut as CheckOutIcon, Archive, Image as ImageIcon, History,
 } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { hotelConfig } from "@/config/hotel";
@@ -57,6 +57,7 @@ type HotelSettings = {
 const tabs = [
   { id: "bookings", label: "Bookings", icon: CalendarDays },
   { id: "guests", label: "Current Guests", icon: Users },
+  { id: "history", label: "History", icon: History },
   { id: "rooms", label: "Rooms", icon: BedDouble },
   { id: "gallery", label: "Gallery", icon: ImageIcon },
   { id: "settings", label: "Settings", icon: Settings },
@@ -182,6 +183,12 @@ const AdminDashboard = () => {
   // Active bookings shown in "Bookings" tab — exclude archived & checked_out
   const activeBookings = useMemo(
     () => bookings.filter(b => b.status !== "archived" && b.status !== "checked_out"),
+    [bookings]
+  );
+
+  // Guest history — anyone who checked out OR was archived. Newest first.
+  const historyBookings = useMemo(
+    () => bookings.filter(b => b.status === "checked_out" || b.status === "archived"),
     [bookings]
   );
 
@@ -321,8 +328,8 @@ const AdminDashboard = () => {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/" target="_blank" className="text-primary-foreground/60 hover:text-primary-foreground text-sm font-body flex items-center gap-1">
-            <Eye className="w-4 h-4" /> View Website
+          <a href="/" className="text-primary-foreground/60 hover:text-primary-foreground text-sm font-body flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Back to Website
           </a>
           <button onClick={handleLogout} className="text-primary-foreground/60 hover:text-primary-foreground text-sm font-body flex items-center gap-1">
             <LogOut className="w-4 h-4" /> Sign Out
