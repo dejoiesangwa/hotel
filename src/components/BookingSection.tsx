@@ -71,7 +71,7 @@ const BookingSection = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.checkIn || !form.checkOut || !form.roomId) {
+    if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.checkIn || !form.checkOut || !form.roomId || !form.guests) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -80,19 +80,43 @@ const BookingSection = () => {
       return;
     }
     setSending(true);
-    const { error } = await supabase.from("bookings").insert({
+    const bookingPayload = {
       guest_name: form.name,
       guest_email: form.email,
-      guest_phone: form.phone || null,
+      guest_phone: form.phone,
       room_id: form.roomId,
       room_name: selectedRoom?.name || "",
       check_in: format(form.checkIn!, "yyyy-MM-dd"),
       check_out: format(form.checkOut!, "yyyy-MM-dd"),
       guests: Number(form.guests),
       special_requests: form.message || null,
-    });
+    };
+    const { error } = await supabase.from("bookings").insert(bookingPayload);
+    if (error) {
+      setSending(false);
+      toast.error("Something went wrong. Please try again.");
+      return;
+    }
+
+    // Notify reception of new booking request (fire-and-forget)
+    try {
+      const { data: settings } = await supabase
+        .from("hotel_settings")
+        .select("reception_email, hotel_name, phone")
+        .maybeSingle();
+      await supabase.functions.invoke("send-booking-confirmation", {
+        body: {
+          booking: bookingPayload,
+          hotel_name: settings?.hotel_name || hotelConfig.fullName,
+          phone: settings?.phone || hotelConfig.phone,
+          reception_email: settings?.reception_email,
+        },
+      });
+    } catch (err) {
+      console.error("Notification email failed:", err);
+    }
+
     setSending(false);
-    if (error) { toast.error("Something went wrong. Please try again."); return; }
     toast.success("Booking request sent! The reception will contact you shortly to confirm availability and payment.");
     setForm({ name: "", email: "", phone: "", roomId: rooms[0]?.id || "", checkIn: null, checkOut: null, guests: "1", message: "" });
   };
