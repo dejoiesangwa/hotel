@@ -252,6 +252,7 @@ const AdminDashboard = () => {
             booking: {
               guest_name: booking.guest_name,
               guest_email: booking.guest_email,
+              guest_phone: booking.guest_phone,
               room_name: booking.room_name,
               check_in: booking.check_in,
               check_out: booking.check_out,
@@ -260,6 +261,7 @@ const AdminDashboard = () => {
             },
             hotel_name: settings?.hotel_name || hotelConfig.fullName,
             phone: settings?.phone || hotelConfig.phone,
+            reception_email: settings?.reception_email,
           },
         });
         if (emailErr) toast.error("Booking confirmed, but email failed: " + emailErr.message);

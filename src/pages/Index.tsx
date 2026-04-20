@@ -4,6 +4,7 @@ import AboutSection from "@/components/AboutSection";
 import RoomsSection from "@/components/RoomsSection";
 import AmenitiesSection from "@/components/AmenitiesSection";
 import BookingSection from "@/components/BookingSection";
+import ContactSection from "@/components/ContactSection";
 import LocationSection from "@/components/LocationSection";
 import Footer from "@/components/Footer";
 
@@ -16,6 +17,7 @@ const Index = () => {
       <RoomsSection />
       <AmenitiesSection />
       <BookingSection />
+      <ContactSection />
       <LocationSection />
       <Footer />
     </div>
@@ -23,3 +25,4 @@ const Index = () => {
 };
 
 export default Index;
+
