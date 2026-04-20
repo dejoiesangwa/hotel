@@ -153,8 +153,8 @@ const BookingSection = () => {
 
           <div className="grid md:grid-cols-2 gap-5">
             <div>
-              <label className="block font-body text-sm font-medium text-foreground mb-1.5">Phone</label>
-              <input name="phone" value={form.phone} onChange={handleChange}
+              <label className="block font-body text-sm font-medium text-foreground mb-1.5">Phone *</label>
+              <input name="phone" value={form.phone} onChange={handleChange} required
                 className="w-full px-4 py-2.5 rounded-md border border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:outline-none"
                 placeholder="+250 7XX XXX XXX" />
             </div>
