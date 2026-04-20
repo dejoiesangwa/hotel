@@ -88,6 +88,19 @@ const AdminDashboard = () => {
   const [galleryCaption, setGalleryCaption] = useState("");
   const [galleryUploading, setGalleryUploading] = useState(false);
 
+  // Testimonials
+  type AdminTestimonial = { id: string; guest_name: string; guest_email: string | null; rating: number; message: string; is_approved: boolean; created_at: string };
+  const [testimonials, setTestimonials] = useState<AdminTestimonial[]>([]);
+
+  // Menu
+  type MenuCategory = { id: string; name: string; sort_order: number };
+  type MenuItem = { id: string; category_id: string | null; name: string; description: string | null; price: number; image_url: string | null; is_special: boolean; is_available: boolean; sort_order: number };
+  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [editingItem, setEditingItem] = useState<Partial<MenuItem> | null>(null);
+  const [menuImageFile, setMenuImageFile] = useState<File | null>(null);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/admin/login"); return; }
@@ -107,6 +120,8 @@ const AdminDashboard = () => {
     fetchBookings();
     fetchSettings();
     fetchGallery();
+    fetchTestimonials();
+    fetchMenu();
   }, [session]);
 
   const fetchRooms = async () => {
@@ -170,6 +185,101 @@ const AdminDashboard = () => {
     if (fileName) await supabase.storage.from("gallery-images").remove([fileName]);
     toast.success("Photo removed");
     fetchGallery();
+  };
+
+  // ─── Testimonials ───────────────────────────────────
+  const fetchTestimonials = async () => {
+    const { data } = await supabase.from("testimonials").select("*").order("created_at", { ascending: false });
+    if (data) setTestimonials(data as AdminTestimonial[]);
+  };
+
+  const setTestimonialApproval = async (id: string, approved: boolean) => {
+    const { error } = await supabase.from("testimonials").update({ is_approved: approved }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(approved ? "Review approved & published" : "Review unpublished");
+    fetchTestimonials();
+  };
+
+  const deleteTestimonial = async (id: string) => {
+    if (!confirm("Delete this review?")) return;
+    const { error } = await supabase.from("testimonials").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Review deleted");
+    fetchTestimonials();
+  };
+
+  // ─── Menu ───────────────────────────────────────────
+  const fetchMenu = async () => {
+    const [cats, items] = await Promise.all([
+      supabase.from("menu_categories").select("*").order("sort_order"),
+      supabase.from("menu_items").select("*").order("sort_order"),
+    ]);
+    if (cats.data) setMenuCategories(cats.data as MenuCategory[]);
+    if (items.data) setMenuItems(items.data as MenuItem[]);
+  };
+
+  const addMenuCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    const { error } = await supabase.from("menu_categories").insert({
+      name: newCategoryName.trim(),
+      sort_order: menuCategories.length,
+    });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Category added");
+    setNewCategoryName("");
+    fetchMenu();
+  };
+
+  const deleteMenuCategory = async (id: string) => {
+    if (!confirm("Delete this category? Items in it will become uncategorized.")) return;
+    await supabase.from("menu_categories").delete().eq("id", id);
+    toast.success("Category deleted");
+    fetchMenu();
+  };
+
+  const handleSaveMenuItem = async () => {
+    if (!editingItem?.name || editingItem.price === undefined || editingItem.price === null) {
+      toast.error("Item name and price are required.");
+      return;
+    }
+    let image_url = editingItem.image_url || null;
+    if (menuImageFile) {
+      const ext = menuImageFile.name.split(".").pop();
+      const path = `menu-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("gallery-images").upload(path, menuImageFile);
+      if (upErr) { toast.error("Image upload failed: " + upErr.message); return; }
+      const { data: urlData } = supabase.storage.from("gallery-images").getPublicUrl(path);
+      image_url = urlData.publicUrl;
+    }
+    const payload = {
+      name: editingItem.name,
+      description: editingItem.description || null,
+      price: Number(editingItem.price),
+      category_id: editingItem.category_id || null,
+      image_url,
+      is_special: editingItem.is_special ?? false,
+      is_available: editingItem.is_available ?? true,
+      sort_order: editingItem.sort_order ?? menuItems.length,
+    };
+    if (editingItem.id) {
+      const { error } = await supabase.from("menu_items").update(payload).eq("id", editingItem.id);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Menu item updated");
+    } else {
+      const { error } = await supabase.from("menu_items").insert(payload);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Menu item added");
+    }
+    setEditingItem(null);
+    setMenuImageFile(null);
+    fetchMenu();
+  };
+
+  const deleteMenuItem = async (id: string) => {
+    if (!confirm("Delete this menu item?")) return;
+    await supabase.from("menu_items").delete().eq("id", id);
+    toast.success("Item deleted");
+    fetchMenu();
   };
 
   // ─── Derived: split bookings ─────────────────────────────────
