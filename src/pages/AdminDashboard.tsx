@@ -75,7 +75,21 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<StaffRole>(
+    (typeof window !== "undefined" && (localStorage.getItem("staff_role") as StaffRole)) || "admin"
+  );
+  const visibleTabs = useMemo(
+    () => allTabs.filter((t) => (t.roles as readonly string[]).includes(role)),
+    [role]
+  );
   const [tab, setTab] = useState<TabId>("bookings");
+
+  // If the active tab isn't allowed for this role, fall back to the first allowed tab.
+  useEffect(() => {
+    if (!visibleTabs.find((t) => t.id === tab)) {
+      setTab(visibleTabs[0].id);
+    }
+  }, [visibleTabs, tab]);
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [editingRoom, setEditingRoom] = useState<Partial<Room> | null>(null);
