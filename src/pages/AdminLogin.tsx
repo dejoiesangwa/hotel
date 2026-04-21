@@ -15,19 +15,44 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  e.preventDefault();
+  setLoading(true);
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  
+  if (error) {
+    toast.error(error.message);
     setLoading(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      // Persist chosen role for this session — drives which tabs the user sees in the dashboard
-      localStorage.setItem("staff_role", role);
-      toast.success(`Welcome back, ${role === "admin" ? "Admin" : "Receptionist"}!`);
-      navigate("/admin");
-    }
-  };
+    return;
+  }
+
+  // ✅ Check real role from database, not from what they clicked
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
+
+  setLoading(false);
+
+  if (!profile) {
+    toast.error("No account profile found. Contact your administrator.");
+    await supabase.auth.signOut();
+    return;
+  }
+
+  // ✅ Route based on REAL role from database
+  if (profile.role === "admin") {
+    toast.success("Welcome back, Admin!");
+    navigate("/admin");
+  } else if (profile.role === "receptionist") {
+    toast.success("Welcome back, Receptionist!");
+    navigate("/receptionist");
+  } else {
+    toast.error("Unauthorized role.");
+    await supabase.auth.signOut();
+  }
+};
 
   return (
     <div className="min-h-screen bg-warm-dark flex items-center justify-center px-4 py-10">
