@@ -453,7 +453,10 @@ const AdminDashboard = () => {
         <div className="flex items-center gap-2">
           <Hotel className="w-5 h-5 text-gold" />
           <span className="font-heading text-lg text-primary-foreground font-semibold">
-            {hotelConfig.name} — Reception
+            {hotelConfig.name} — {role === "admin" ? "Admin" : "Reception"}
+          </span>
+          <span className="ml-2 text-[10px] uppercase tracking-wider font-body font-semibold px-2 py-0.5 rounded-full bg-gold/20 text-gold">
+            {role}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -469,7 +472,7 @@ const AdminDashboard = () => {
       <div className="flex">
         {/* Sidebar */}
         <nav className="w-56 bg-card border-r border-border min-h-[calc(100vh-52px)] p-4 space-y-1">
-          {tabs.map(t => (
+          {visibleTabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-md font-body text-sm transition-colors ${tab === t.id ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"}`}>
               <t.icon className="w-4 h-4" /> {t.label}
