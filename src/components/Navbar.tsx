@@ -8,9 +8,6 @@ const navLinks = [
   { label: "Rooms", href: "/#rooms" },
   { label: "Gallery", href: "/#gallery" },
   { label: "Amenities", href: "/#amenities" },
-  { label: "Menu", href: "/#menu" },
-  { label: "Booking", href: "/#booking" },
-  { label: "Reviews", href: "/#testimonials" },
   { label: "Contact", href: "/#contact" },
 ];
 
