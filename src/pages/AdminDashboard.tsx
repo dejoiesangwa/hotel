@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -10,7 +10,7 @@ import {
 import type { Session } from "@supabase/supabase-js";
 import { hotelConfig } from "@/config/hotel";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type GalleryImage = {
   id: string;
@@ -91,16 +91,16 @@ type StaffMember = {
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
 const allTabs = [
-  { id: "analytics",    label: "Analytics",      icon: BarChart3,       adminOnly: true  },
-  { id: "bookings",     label: "Bookings",        icon: CalendarDays,    adminOnly: false },
-  { id: "guests",       label: "Current Guests",  icon: Users,           adminOnly: false },
-  { id: "history",      label: "History",         icon: History,         adminOnly: false },
-  { id: "rooms",        label: "Rooms & Pricing", icon: BedDouble,       adminOnly: true  },
-  { id: "gallery",      label: "Gallery",         icon: ImageIcon,       adminOnly: false },
-  { id: "testimonials", label: "Reviews",         icon: MessageSquare,   adminOnly: false },
-  { id: "menu",         label: "Menu",            icon: UtensilsCrossed, adminOnly: true  },
-  { id: "staff",        label: "Staff",           icon: UserPlus,        adminOnly: true  },
-  { id: "settings",     label: "Settings",        icon: Settings,        adminOnly: true  },
+  { id: "analytics",    label: "Analytics",      icon: BarChart3       },
+  { id: "bookings",     label: "Bookings",        icon: CalendarDays    },
+  { id: "guests",       label: "Current Guests",  icon: Users           },
+  { id: "history",      label: "History",         icon: History         },
+  { id: "rooms",        label: "Rooms & Pricing", icon: BedDouble       },
+  { id: "gallery",      label: "Gallery",         icon: ImageIcon       },
+  { id: "testimonials", label: "Reviews",         icon: MessageSquare   },
+  { id: "menu",         label: "Menu",            icon: UtensilsCrossed },
+  { id: "staff",        label: "Staff",           icon: UserPlus        },
+  { id: "settings",     label: "Settings",        icon: Settings        },
 ] as const;
 
 type TabId = typeof allTabs[number]["id"];
@@ -111,9 +111,8 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [session, setSession]   = useState<Session | null>(null);
+  const [session, setSession]       = useState<Session | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   // ── Auth + role check ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -122,7 +121,6 @@ const AdminDashboard = () => {
       if (!session) { navigate("/admin/login"); return; }
       setSession(session);
 
-      // Fetch real role from database
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
@@ -130,7 +128,6 @@ const AdminDashboard = () => {
         .single();
 
       if (!profile || profile.role !== "admin") {
-        // Not an admin — redirect appropriately
         if (profile?.role === "receptionist") {
           navigate("/receptionist");
         } else {
@@ -140,7 +137,6 @@ const AdminDashboard = () => {
         return;
       }
 
-      setUserRole("admin");
       setPageLoading(false);
     };
     init();
@@ -156,28 +152,28 @@ const AdminDashboard = () => {
   const [tab, setTab] = useState<TabId>("bookings");
 
   // ── Data state ────────────────────────────────────────────────────────────
-  const [rooms,          setRooms]          = useState<Room[]>([]);
-  const [editingRoom,    setEditingRoom]    = useState<Partial<Room> | null>(null);
-  const [roomImageFile,  setRoomImageFile]  = useState<File | null>(null);
-  const [bookings,       setBookings]       = useState<Booking[]>([]);
-  const [settings,       setSettings]       = useState<HotelSettings | null>(null);
-  const [galleryImages,  setGalleryImages]  = useState<GalleryImage[]>([]);
-  const [galleryFile,    setGalleryFile]    = useState<File | null>(null);
-  const [galleryCaption, setGalleryCaption] = useState("");
-  const [galleryUploading, setGalleryUploading] = useState(false);
-  const [testimonials,   setTestimonials]   = useState<AdminTestimonial[]>([]);
-  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
-  const [menuItems,      setMenuItems]      = useState<MenuItem[]>([]);
-  const [editingItem,    setEditingItem]    = useState<Partial<MenuItem> | null>(null);
-  const [menuImageFile,  setMenuImageFile]  = useState<File | null>(null);
+  const [rooms,           setRooms]           = useState<Room[]>([]);
+  const [editingRoom,     setEditingRoom]     = useState<Partial<Room> | null>(null);
+  const [roomImageFile,   setRoomImageFile]   = useState<File | null>(null);
+  const [bookings,        setBookings]        = useState<Booking[]>([]);
+  const [settings,        setSettings]        = useState<HotelSettings | null>(null);
+  const [galleryImages,   setGalleryImages]   = useState<GalleryImage[]>([]);
+  const [galleryFile,     setGalleryFile]     = useState<File | null>(null);
+  const [galleryCaption,  setGalleryCaption]  = useState("");
+  const [galleryUploading,setGalleryUploading]= useState(false);
+  const [testimonials,    setTestimonials]    = useState<AdminTestimonial[]>([]);
+  const [menuCategories,  setMenuCategories]  = useState<MenuCategory[]>([]);
+  const [menuItems,       setMenuItems]       = useState<MenuItem[]>([]);
+  const [editingItem,     setEditingItem]     = useState<Partial<MenuItem> | null>(null);
+  const [menuImageFile,   setMenuImageFile]   = useState<File | null>(null);
   const [newCategoryName, setNewCategoryName] = useState("");
 
   // ── Staff state ───────────────────────────────────────────────────────────
-  const [staffList,      setStaffList]      = useState<StaffMember[]>([]);
-  const [newStaffEmail,  setNewStaffEmail]  = useState("");
-  const [newStaffName,   setNewStaffName]   = useState("");
-  const [newStaffPass,   setNewStaffPass]   = useState("");
-  const [creatingStaff,  setCreatingStaff]  = useState(false);
+  const [staffList,     setStaffList]     = useState<StaffMember[]>([]);
+  const [newStaffEmail, setNewStaffEmail] = useState("");
+  const [newStaffName,  setNewStaffName]  = useState("");
+  const [newStaffPass,  setNewStaffPass]  = useState("");
+  const [creatingStaff, setCreatingStaff] = useState(false);
 
   // ── Fetch all data once session is ready ──────────────────────────────────
   useEffect(() => {
@@ -288,6 +284,7 @@ const AdminDashboard = () => {
     await supabase.from("menu_categories").delete().eq("id", id);
     toast.success("Category deleted"); fetchMenu();
   };
+
   const handleSaveMenuItem = async () => {
     if (!editingItem?.name || editingItem.price === undefined || editingItem.price === null) {
       toast.error("Item name and price are required."); return;
@@ -318,6 +315,7 @@ const AdminDashboard = () => {
     }
     setEditingItem(null); setMenuImageFile(null); fetchMenu();
   };
+
   const deleteMenuItem = async (id: string) => {
     if (!confirm("Delete this menu item?")) return;
     await supabase.from("menu_items").delete().eq("id", id);
@@ -354,6 +352,7 @@ const AdminDashboard = () => {
     }
     setEditingRoom(null); setRoomImageFile(null); fetchRooms();
   };
+
   const handleDeleteRoom = async (id: string) => {
     if (!confirm("Delete this room?")) return;
     await supabase.from("rooms").delete().eq("id", id);
@@ -418,7 +417,6 @@ const AdminDashboard = () => {
     setCreatingStaff(true);
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-receptionist`,
         {
@@ -427,16 +425,11 @@ const AdminDashboard = () => {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${currentSession?.access_token}`,
           },
-          body: JSON.stringify({
-            email: newStaffEmail,
-            password: newStaffPass,
-            full_name: newStaffName,
-          }),
+          body: JSON.stringify({ email: newStaffEmail, password: newStaffPass, full_name: newStaffName }),
         }
       );
       const result = await response.json();
       if (result.error) throw new Error(result.error);
-
       toast.success(`Receptionist account created for ${newStaffName}!`);
       setNewStaffEmail(""); setNewStaffPass(""); setNewStaffName("");
       fetchStaff();
@@ -455,14 +448,13 @@ const AdminDashboard = () => {
     toast.success(`${name}'s account removed`); fetchStaff();
   };
 
-  // ── Loading / guard ───────────────────────────────────────────────────────
+  // ── Loading guard ─────────────────────────────────────────────────────────
   if (pageLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <p className="text-muted-foreground">Loading...</p>
     </div>
   );
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
       confirmed: "bg-green-100 text-green-800",
@@ -961,13 +953,11 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ── STAFF (NEW) ── */}
+          {/* ── STAFF ── */}
           {tab === "staff" && (
             <div>
               <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Staff Management</h2>
               <p className="font-body text-sm text-muted-foreground mb-6">Create receptionist accounts and manage your team.</p>
-
-              {/* Create receptionist form */}
               <div className="bg-card border border-border rounded-lg p-5 mb-8 max-w-lg">
                 <h3 className="font-heading text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                   <UserPlus className="w-5 h-5 text-gold" /> Create Receptionist Account
@@ -994,8 +984,6 @@ const AdminDashboard = () => {
                   </button>
                 </form>
               </div>
-
-              {/* Staff list */}
               <h3 className="font-heading text-lg font-semibold text-foreground mb-3">Current Staff</h3>
               {staffList.length === 0 ? (
                 <div className="bg-card border border-border rounded-lg p-8 text-center">
