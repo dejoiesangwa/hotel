@@ -488,6 +488,145 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <main className="flex-1 p-6 max-w-5xl">
+          {/* ANALYTICS TAB (admin only) */}
+          {tab === "analytics" && (() => {
+            const nightsBetween = (a: string, b: string) => {
+              const ms = new Date(b).getTime() - new Date(a).getTime();
+              return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)));
+            };
+            const priceFor = (name: string) => rooms.find((r) => r.name === name)?.price ?? 0;
+            const isRevenue = (s: string) => ["confirmed", "checked_in", "checked_out", "archived"].includes(s);
+            const totalRevenue = bookings
+              .filter((b) => isRevenue(b.status))
+              .reduce((sum, b) => sum + priceFor(b.room_name) * nightsBetween(b.check_in, b.check_out), 0);
+            const totalBookings = bookings.length;
+            const activeGuests = bookings.filter((b) => b.status === "checked_in").length;
+            const completed = bookings.filter((b) => ["checked_out", "archived"].includes(b.status)).length;
+
+            // Bookings per month (last 6 months)
+            const months: { label: string; count: number; revenue: number }[] = [];
+            const now = new Date();
+            for (let i = 5; i >= 0; i--) {
+              const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+              const label = d.toLocaleString("en", { month: "short", year: "2-digit" });
+              const monthBookings = bookings.filter((b) => {
+                const bd = new Date(b.created_at);
+                return bd.getFullYear() === d.getFullYear() && bd.getMonth() === d.getMonth();
+              });
+              months.push({
+                label,
+                count: monthBookings.length,
+                revenue: monthBookings
+                  .filter((b) => isRevenue(b.status))
+                  .reduce((s, b) => s + priceFor(b.room_name) * nightsBetween(b.check_in, b.check_out), 0),
+              });
+            }
+            const maxCount = Math.max(1, ...months.map((m) => m.count));
+
+            // Top rooms
+            const roomCounts: Record<string, number> = {};
+            bookings.forEach((b) => {
+              roomCounts[b.room_name] = (roomCounts[b.room_name] || 0) + 1;
+            });
+            const topRooms = Object.entries(roomCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            // Occupancy (next 30 days)
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const horizon = 30;
+            let occupied = 0;
+            for (let i = 0; i < horizon; i++) {
+              const day = new Date(today); day.setDate(today.getDate() + i);
+              const dayStr = day.toISOString().slice(0, 10);
+              bookings.forEach((b) => {
+                if (!["confirmed", "checked_in"].includes(b.status)) return;
+                if (b.check_in <= dayStr && dayStr < b.check_out) occupied += 1;
+              });
+            }
+            const totalRoomNights = Math.max(1, rooms.length * horizon);
+            const occupancyPct = Math.min(100, Math.round((occupied / totalRoomNights) * 100));
+
+            return (
+              <div>
+                <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Analytics</h2>
+                <p className="font-body text-sm text-muted-foreground mb-6">
+                  Revenue, bookings and occupancy at a glance.
+                </p>
+
+                {/* KPI cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  {[
+                    { label: "Total Revenue", value: `${totalRevenue.toLocaleString()} ${hotelConfig.currency}` },
+                    { label: "Total Bookings", value: totalBookings },
+                    { label: "Active Guests", value: activeGuests },
+                    { label: `Occupancy (${horizon}d)`, value: `${occupancyPct}%` },
+                  ].map((k) => (
+                    <div key={k.label} className="bg-card border border-border rounded-xl p-4">
+                      <p className="font-body text-xs text-muted-foreground uppercase tracking-wide">{k.label}</p>
+                      <p className="font-heading text-2xl font-bold text-foreground mt-1">{k.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bookings per month */}
+                <div className="bg-card border border-border rounded-xl p-5 mb-6">
+                  <h3 className="font-heading text-lg font-semibold text-foreground mb-4">Bookings — last 6 months</h3>
+                  <div className="flex items-end gap-3 h-48">
+                    {months.map((m) => (
+                      <div key={m.label} className="flex-1 flex flex-col items-center gap-2">
+                        <div className="text-xs font-body text-muted-foreground">{m.count}</div>
+                        <div
+                          className="w-full bg-primary/80 rounded-t-md transition-all"
+                          style={{ height: `${(m.count / maxCount) * 100}%`, minHeight: m.count > 0 ? "6px" : "2px" }}
+                          title={`${m.count} bookings — ${m.revenue.toLocaleString()} ${hotelConfig.currency}`}
+                        />
+                        <div className="text-xs font-body text-muted-foreground">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Top rooms */}
+                  <div className="bg-card border border-border rounded-xl p-5">
+                    <h3 className="font-heading text-lg font-semibold text-foreground mb-4">Top rooms</h3>
+                    {topRooms.length === 0 ? (
+                      <p className="font-body text-sm text-muted-foreground">No bookings yet.</p>
+                    ) : (
+                      <ul className="space-y-3">
+                        {topRooms.map(([name, count]) => (
+                          <li key={name} className="flex items-center justify-between">
+                            <span className="font-body text-sm text-foreground">{name}</span>
+                            <span className="font-body text-sm font-medium text-primary">{count} bookings</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  {/* Status breakdown */}
+                  <div className="bg-card border border-border rounded-xl p-5">
+                    <h3 className="font-heading text-lg font-semibold text-foreground mb-4">Status breakdown</h3>
+                    <ul className="space-y-3">
+                      {["pending", "confirmed", "checked_in", "checked_out", "archived", "cancelled"].map((s) => {
+                        const c = bookings.filter((b) => b.status === s).length;
+                        return (
+                          <li key={s} className="flex items-center justify-between">
+                            <span className="font-body text-sm text-foreground capitalize">{s.replace("_", " ")}</span>
+                            <span className="font-body text-sm font-medium text-muted-foreground">{c}</span>
+                          </li>
+                        );
+                      })}
+                      <li className="flex items-center justify-between border-t border-border pt-3 mt-3">
+                        <span className="font-body text-sm font-semibold text-foreground">Completed stays</span>
+                        <span className="font-body text-sm font-bold text-primary">{completed}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* CURRENT GUESTS TAB */}
           {tab === "guests" && (
             <div>
