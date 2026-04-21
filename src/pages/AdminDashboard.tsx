@@ -321,6 +321,7 @@ const AdminDashboard = () => {
   );
 
   const handleLogout = async () => {
+    localStorage.removeItem("staff_role");
     await supabase.auth.signOut();
     navigate("/admin/login");
   };
