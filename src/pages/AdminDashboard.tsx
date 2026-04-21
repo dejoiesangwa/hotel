@@ -55,18 +55,19 @@ type HotelSettings = {
   review_count: number;
 };
 
-const tabs = [
-  { id: "bookings", label: "Bookings", icon: CalendarDays },
-  { id: "guests", label: "Current Guests", icon: Users },
-  { id: "history", label: "History", icon: History },
-  { id: "rooms", label: "Rooms", icon: BedDouble },
-  { id: "gallery", label: "Gallery", icon: ImageIcon },
-  { id: "testimonials", label: "Reviews", icon: MessageSquare },
-  { id: "menu", label: "Menu", icon: UtensilsCrossed },
-  { id: "settings", label: "Settings", icon: Settings },
+const allTabs = [
+  { id: "bookings", label: "Bookings", icon: CalendarDays, roles: ["admin", "receptionist"] as const },
+  { id: "guests", label: "Current Guests", icon: Users, roles: ["admin", "receptionist"] as const },
+  { id: "history", label: "History", icon: History, roles: ["admin", "receptionist"] as const },
+  { id: "rooms", label: "Rooms & Pricing", icon: BedDouble, roles: ["admin"] as const },
+  { id: "gallery", label: "Gallery", icon: ImageIcon, roles: ["admin", "receptionist"] as const },
+  { id: "testimonials", label: "Reviews", icon: MessageSquare, roles: ["admin", "receptionist"] as const },
+  { id: "menu", label: "Menu", icon: UtensilsCrossed, roles: ["admin"] as const },
+  { id: "settings", label: "Settings", icon: Settings, roles: ["admin"] as const },
 ] as const;
 
-type TabId = typeof tabs[number]["id"];
+type TabId = typeof allTabs[number]["id"];
+type StaffRole = "admin" | "receptionist";
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
