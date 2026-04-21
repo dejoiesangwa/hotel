@@ -4,11 +4,12 @@ import { hotelConfig } from "@/config/hotel";
 
 const navLinks = [
   { label: "Home", href: "/#" },
-  { label: "Rooms", href: "/#rooms" },
-  { label: "Amenities", href: "/#amenities" },
   { label: "About", href: "/#about" },
-  { label: "Gallery", href: "/gallery" },
-  { label: "Menu", href: "/menu" },
+  { label: "Rooms", href: "/#rooms" },
+  { label: "Gallery", href: "/#gallery" },
+  { label: "Amenities", href: "/#amenities" },
+  { label: "Menu", href: "/#menu" },
+  { label: "Booking", href: "/#booking" },
   { label: "Reviews", href: "/#testimonials" },
   { label: "Contact", href: "/#contact" },
 ];

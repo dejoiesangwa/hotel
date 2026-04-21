@@ -55,18 +55,19 @@ type HotelSettings = {
   review_count: number;
 };
 
-const tabs = [
-  { id: "bookings", label: "Bookings", icon: CalendarDays },
-  { id: "guests", label: "Current Guests", icon: Users },
-  { id: "history", label: "History", icon: History },
-  { id: "rooms", label: "Rooms", icon: BedDouble },
-  { id: "gallery", label: "Gallery", icon: ImageIcon },
-  { id: "testimonials", label: "Reviews", icon: MessageSquare },
-  { id: "menu", label: "Menu", icon: UtensilsCrossed },
-  { id: "settings", label: "Settings", icon: Settings },
+const allTabs = [
+  { id: "bookings", label: "Bookings", icon: CalendarDays, roles: ["admin", "receptionist"] as const },
+  { id: "guests", label: "Current Guests", icon: Users, roles: ["admin", "receptionist"] as const },
+  { id: "history", label: "History", icon: History, roles: ["admin", "receptionist"] as const },
+  { id: "rooms", label: "Rooms & Pricing", icon: BedDouble, roles: ["admin"] as const },
+  { id: "gallery", label: "Gallery", icon: ImageIcon, roles: ["admin", "receptionist"] as const },
+  { id: "testimonials", label: "Reviews", icon: MessageSquare, roles: ["admin", "receptionist"] as const },
+  { id: "menu", label: "Menu", icon: UtensilsCrossed, roles: ["admin"] as const },
+  { id: "settings", label: "Settings", icon: Settings, roles: ["admin"] as const },
 ] as const;
 
-type TabId = typeof tabs[number]["id"];
+type TabId = typeof allTabs[number]["id"];
+type StaffRole = "admin" | "receptionist";
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
@@ -74,7 +75,21 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<StaffRole>(
+    (typeof window !== "undefined" && (localStorage.getItem("staff_role") as StaffRole)) || "admin"
+  );
+  const visibleTabs = useMemo(
+    () => allTabs.filter((t) => (t.roles as readonly string[]).includes(role)),
+    [role]
+  );
   const [tab, setTab] = useState<TabId>("bookings");
+
+  // If the active tab isn't allowed for this role, fall back to the first allowed tab.
+  useEffect(() => {
+    if (!visibleTabs.find((t) => t.id === tab)) {
+      setTab(visibleTabs[0].id);
+    }
+  }, [visibleTabs, tab]);
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [editingRoom, setEditingRoom] = useState<Partial<Room> | null>(null);
@@ -306,6 +321,7 @@ const AdminDashboard = () => {
   );
 
   const handleLogout = async () => {
+    localStorage.removeItem("staff_role");
     await supabase.auth.signOut();
     navigate("/admin/login");
   };
@@ -437,7 +453,10 @@ const AdminDashboard = () => {
         <div className="flex items-center gap-2">
           <Hotel className="w-5 h-5 text-gold" />
           <span className="font-heading text-lg text-primary-foreground font-semibold">
-            {hotelConfig.name} — Reception
+            {hotelConfig.name} — {role === "admin" ? "Admin" : "Reception"}
+          </span>
+          <span className="ml-2 text-[10px] uppercase tracking-wider font-body font-semibold px-2 py-0.5 rounded-full bg-gold/20 text-gold">
+            {role}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -453,7 +472,7 @@ const AdminDashboard = () => {
       <div className="flex">
         {/* Sidebar */}
         <nav className="w-56 bg-card border-r border-border min-h-[calc(100vh-52px)] p-4 space-y-1">
-          {tabs.map(t => (
+          {visibleTabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-md font-body text-sm transition-colors ${tab === t.id ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"}`}>
               <t.icon className="w-4 h-4" /> {t.label}

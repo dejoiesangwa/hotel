@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, ImageIcon } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 type GalleryImage = {
   id: string;
@@ -11,56 +8,40 @@ type GalleryImage = {
   caption: string | null;
 };
 
-const Gallery = () => {
+const GallerySection = () => {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
 
   useEffect(() => {
-    document.title = "Gallery — Hotel Photos";
-    (async () => {
-      const { data } = await supabase
-        .from("gallery_images")
-        .select("id, image_url, caption")
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false });
-      if (data) setImages(data as GalleryImage[]);
-      setLoading(false);
-    })();
+    supabase
+      .from("gallery_images")
+      .select("id, image_url, caption")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setImages(data as GalleryImage[]);
+        setLoading(false);
+      });
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-24 pb-16 container mx-auto px-4">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm font-body text-muted-foreground hover:text-gold mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back to home
-        </Link>
-
-        <header className="text-center mb-10">
-          <p className="font-body text-sm tracking-[0.3em] text-gold uppercase mb-2">
-            Our Hotel
+    <section id="gallery" className="py-20 bg-background">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-14">
+          <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Our Hotel</p>
+          <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground">Gallery</h2>
+          <p className="font-body text-muted-foreground mt-3 max-w-lg mx-auto">
+            Explore our spaces, rooms, and amenities through the lens of our guests and team.
           </p>
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-foreground">
-            Gallery
-          </h1>
-          <p className="font-body text-muted-foreground mt-3 max-w-xl mx-auto">
-            Explore our spaces, rooms, and amenities through the lens of our
-            guests and team.
-          </p>
-        </header>
+        </div>
 
         {loading ? (
           <p className="text-center text-muted-foreground font-body">Loading…</p>
         ) : images.length === 0 ? (
-          <div className="text-center py-16 bg-card border border-border rounded-lg">
-            <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="font-body text-muted-foreground">
-              No photos yet. Check back soon.
-            </p>
+          <div className="text-center py-12 bg-card border border-border rounded-lg max-w-md mx-auto">
+            <ImageIcon className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+            <p className="font-body text-muted-foreground text-sm">No photos yet. Check back soon.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
@@ -85,7 +66,7 @@ const Gallery = () => {
             ))}
           </div>
         )}
-      </main>
+      </div>
 
       {lightbox && (
         <div
@@ -104,10 +85,8 @@ const Gallery = () => {
           )}
         </div>
       )}
-
-      <Footer />
-    </div>
+    </section>
   );
 };
 
-export default Gallery;
+export default GallerySection;
