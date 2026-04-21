@@ -1,3 +1,5 @@
+import { useUserRole } from "@/hooks/useUserRole";
+import { Navigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +12,11 @@ import {
 import type { Session } from "@supabase/supabase-js";
 import { hotelConfig } from "@/config/hotel";
 
+const AdminDashboard = () => {
+  const { role, loading } = useUserRole();
+
+  if (loading) return <div>Loading...</div>;
+  if (role !== "admin") return <Navigate to="/admin/login" />;
 type GalleryImage = {
   id: string;
   image_url: string;
@@ -1206,3 +1213,5 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+};
