@@ -8,8 +8,6 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
-import Gallery from "./pages/Gallery.tsx";
-import Menu from "./pages/Menu.tsx";
 import { applyHotelTheme } from "./config/applyTheme";
 
 const queryClient = new QueryClient();
@@ -24,8 +22,6 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/menu" element={<Menu />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
