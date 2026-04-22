@@ -10,7 +10,7 @@ const AboutPage = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
         <img
           src={heroImg}
           alt="About Silver Hotel"

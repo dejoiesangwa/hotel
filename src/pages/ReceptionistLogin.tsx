@@ -51,6 +51,12 @@ const ReceptionistLogin = () => {
   return (
     <div className="min-h-screen bg-warm-dark flex items-center justify-center px-4 py-10">
       <div className="bg-card rounded-2xl p-6 sm:p-8 max-w-md w-full border border-border shadow-2xl">
+        <button
+          onClick={() => navigate("/auth")}
+          className="mb-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body text-sm"
+        >
+          <span className="text-lg">←</span> Back to selection
+        </button>
         <div className="text-center mb-8">
           <h1 className="font-heading text-2xl font-bold text-foreground">Receptionist Login</h1>
           <p className="font-body text-sm text-muted-foreground mt-1">{hotelConfig.fullName}</p>

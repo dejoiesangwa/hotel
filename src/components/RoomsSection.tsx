@@ -24,17 +24,28 @@ type Room = {
   is_available: boolean;
 };
 
-const RoomsSection = () => {
+interface RoomsSectionProps {
+  limit?: number;
+  showViewAll?: boolean;
+}
+
+const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
   const [rooms, setRooms] = useState<Room[]>([]);
 
   useEffect(() => {
-    supabase.from("rooms").select("*").eq("is_available", true).order("price").then(({ data }) => {
+    let query = supabase.from("rooms").select("*").eq("is_available", true).order("price");
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    query.then(({ data }) => {
       if (data) setRooms(data as Room[]);
     });
-  }, []);
+  }, [limit]);
 
   return (
-    <section id="rooms" className="py-32 bg-background">
+    <section id="rooms" className="py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-14">
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Accommodation</p>
@@ -44,7 +55,7 @@ const RoomsSection = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className={`grid gap-10 ${limit ? "md:grid-cols-2 max-w-5xl mx-auto" : "md:grid-cols-2 lg:grid-cols-3"}`}>
           {rooms.map((room) => (
             <div key={room.id} className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
               <div className="relative overflow-hidden h-64">
@@ -57,9 +68,9 @@ const RoomsSection = () => {
               </div>
               <div className="p-8">
                 <div className="flex justify-between items-start gap-2 mb-3">
-                  <h3 className="font-heading text-2xl font-bold text-foreground group-hover:text-gold transition-colors">{room.name}</h3>
+                  <h3 className="font-heading text-xl font-bold text-foreground group-hover:text-gold transition-colors">{room.name}</h3>
                   <div className="text-right">
-                    <span className="block font-heading text-2xl font-bold text-gold">
+                    <span className="block font-body text-lg font-bold text-gold">
                       {hotelConfig.currency} {room.price.toLocaleString()}
                     </span>
                     <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">per night</span>
@@ -92,6 +103,17 @@ const RoomsSection = () => {
             </div>
           ))}
         </div>
+
+        {showViewAll && (
+          <div className="mt-16 text-center">
+            <a
+              href="/rooms"
+              className="inline-block px-10 py-3.5 rounded-md border-2 border-gold text-gold font-body font-semibold hover:bg-gold hover:text-white transition-all duration-300 uppercase tracking-widest text-xs"
+            >
+              View All Rooms
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );

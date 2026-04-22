@@ -12,15 +12,39 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseAdmin = createClient(
+      supabaseUrl,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    // Verify the caller is an admin
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('Missing Authorization header')
+    }
+
+    const supabaseClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
+      global: { headers: { Authorization: authHeader } },
+    })
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    if (userError || !user) throw new Error('Unauthorized')
+
+    const { data: profile, error: profileCheckError } = await supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profileCheckError || profile?.role !== 'admin') {
+      throw new Error('Forbidden: Only admins can create accounts')
+    }
 
     const { email, password, full_name } = await req.json()
 
     // 1. Create the user in Auth
-    const { data: userData, error: authError } = await supabaseClient.auth.admin.createUser({
+    const { data: userData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
@@ -31,7 +55,7 @@ serve(async (req) => {
 
     // 2. The trigger on 'auth.users' should handle the 'profiles' table insertion,
     // but we can update it here to ensure the role is set to 'receptionist'.
-    const { error: profileError } = await supabaseClient
+    const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({ role: 'receptionist', full_name })
       .eq('id', userData.user.id)

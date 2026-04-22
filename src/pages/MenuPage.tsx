@@ -44,7 +44,7 @@ const MenuPage = () => {
       <Navbar />
 
       {/* Culinary Hero */}
-      <section className="relative h-[50vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[75vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <img
           src={heroImg}
           alt="Fine Dining at Silver Hotel"
