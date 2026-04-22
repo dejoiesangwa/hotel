@@ -34,7 +34,7 @@ const RoomsSection = () => {
   }, []);
 
   return (
-    <section id="rooms" className="py-20 bg-background">
+    <section id="rooms" className="py-32 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-14">
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Accommodation</p>
@@ -44,25 +44,28 @@ const RoomsSection = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {rooms.map((room) => (
-            <div key={room.id} className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-xl transition-shadow duration-300 group">
-              <div className="relative overflow-hidden h-56">
+            <div key={room.id} className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
+              <div className="relative overflow-hidden h-64">
                 <img
                   src={room.image_url || fallbackImages[room.name] || roomDeluxe}
                   alt={room.name}
                   loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute top-4 right-4 gold-gradient px-3 py-1 rounded-full">
-                  <span className="font-body text-sm font-semibold text-primary-foreground">
-                    {hotelConfig.currency} {room.price.toLocaleString()}
-                  </span>
-                </div>
               </div>
-              <div className="p-6">
-                <h3 className="font-heading text-xl font-semibold text-foreground mb-2">{room.name}</h3>
-                <p className="font-body text-sm text-muted-foreground mb-4">{room.description}</p>
+              <div className="p-8">
+                <div className="flex justify-between items-start gap-2 mb-3">
+                  <h3 className="font-heading text-2xl font-bold text-foreground group-hover:text-gold transition-colors">{room.name}</h3>
+                  <div className="text-right">
+                    <span className="block font-heading text-2xl font-bold text-gold">
+                      {hotelConfig.currency} {room.price.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">per night</span>
+                  </div>
+                </div>
+                <p className="font-body text-sm text-muted-foreground mb-6 line-clamp-2">{room.description}</p>
 
                 {/* Capacity badge */}
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">

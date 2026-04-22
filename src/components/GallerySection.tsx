@@ -26,7 +26,7 @@ const GallerySection = () => {
   }, []);
 
   return (
-    <section id="gallery" className="py-20 bg-background">
+    <section id="gallery" className="py-32 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-14">
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Our Hotel</p>
@@ -44,22 +44,25 @@ const GallerySection = () => {
             <p className="font-body text-muted-foreground text-sm">No photos yet. Check back soon.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {images.map((img) => (
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+            {images.map((img, i) => (
               <button
                 key={img.id}
                 onClick={() => setLightbox(img)}
-                className="group relative aspect-square overflow-hidden rounded-lg bg-secondary"
+                className={`group relative w-full overflow-hidden rounded-2xl bg-secondary mb-4 break-inside-avoid shadow-md hover:shadow-2xl transition-all duration-500 ${
+                  i % 3 === 0 ? 'aspect-[4/5]' : i % 3 === 1 ? 'aspect-square' : 'aspect-[3/4]'
+                }`}
               >
                 <img
                   src={img.image_url}
                   alt={img.caption || "Hotel photo"}
                   loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
                 {img.caption && (
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="font-body text-xs text-white">{img.caption}</p>
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                    <p className="font-body text-sm text-white font-medium">{img.caption}</p>
                   </div>
                 )}
               </button>

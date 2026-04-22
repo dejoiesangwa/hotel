@@ -13,7 +13,7 @@ const amenities = [
 
 const AmenitiesSection = () => {
   return (
-    <section id="amenities" className="py-20 bg-warm">
+    <section id="amenities" className="py-32 bg-card border-y border-border">
       <div className="container mx-auto px-4">
         <div className="text-center mb-14">
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">What We Offer</p>
