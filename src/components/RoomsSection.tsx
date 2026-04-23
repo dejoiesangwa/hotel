@@ -24,17 +24,28 @@ type Room = {
   is_available: boolean;
 };
 
-const RoomsSection = () => {
+interface RoomsSectionProps {
+  limit?: number;
+  showViewAll?: boolean;
+}
+
+const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
   const [rooms, setRooms] = useState<Room[]>([]);
 
   useEffect(() => {
-    supabase.from("rooms").select("*").eq("is_available", true).order("price").then(({ data }) => {
+    let query = supabase.from("rooms").select("*").eq("is_available", true).order("price");
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    query.then(({ data }) => {
       if (data) setRooms(data as Room[]);
     });
-  }, []);
+  }, [limit]);
 
   return (
-    <section id="rooms" className="py-20 bg-background">
+    <section id="rooms" className="py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-14">
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Accommodation</p>
@@ -44,25 +55,28 @@ const RoomsSection = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className={`grid gap-10 ${limit ? "md:grid-cols-2 max-w-5xl mx-auto" : "md:grid-cols-2 lg:grid-cols-3"}`}>
           {rooms.map((room) => (
-            <div key={room.id} className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-xl transition-shadow duration-300 group">
-              <div className="relative overflow-hidden h-56">
+            <div key={room.id} className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
+              <div className="relative overflow-hidden h-64">
                 <img
                   src={room.image_url || fallbackImages[room.name] || roomDeluxe}
                   alt={room.name}
                   loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute top-4 right-4 gold-gradient px-3 py-1 rounded-full">
-                  <span className="font-body text-sm font-semibold text-primary-foreground">
-                    {hotelConfig.currency} {room.price.toLocaleString()}
-                  </span>
-                </div>
               </div>
-              <div className="p-6">
-                <h3 className="font-heading text-xl font-semibold text-foreground mb-2">{room.name}</h3>
-                <p className="font-body text-sm text-muted-foreground mb-4">{room.description}</p>
+              <div className="p-8">
+                <div className="flex justify-between items-start gap-2 mb-3">
+                  <h3 className="font-heading text-xl font-bold text-foreground group-hover:text-gold transition-colors">{room.name}</h3>
+                  <div className="text-right">
+                    <span className="block font-body text-lg font-bold text-gold">
+                      {hotelConfig.currency} {room.price.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">per night</span>
+                  </div>
+                </div>
+                <p className="font-body text-sm text-muted-foreground mb-6 line-clamp-2">{room.description}</p>
 
                 {/* Capacity badge */}
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
@@ -89,6 +103,17 @@ const RoomsSection = () => {
             </div>
           ))}
         </div>
+
+        {showViewAll && (
+          <div className="mt-16 text-center">
+            <a
+              href="/rooms"
+              className="inline-block px-10 py-3.5 rounded-md border-2 border-gold text-gold font-body font-semibold hover:bg-gold hover:text-white transition-all duration-300 uppercase tracking-widest text-xs"
+            >
+              View All Rooms
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );

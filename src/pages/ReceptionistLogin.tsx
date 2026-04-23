@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hotelConfig } from "@/config/hotel";
 
-const AdminLogin = () => {
+const ReceptionistLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,6 @@ const AdminLogin = () => {
       return;
     }
 
-    // Check real role from the database
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
@@ -37,14 +36,14 @@ const AdminLogin = () => {
       return;
     }
 
-    if (profile.role === "admin") {
+    if (profile.role === "receptionist") {
+      toast.success("Login successful!");
+      navigate("/receptionist");
+    } else if (profile.role === "admin") {
       toast.success("Welcome back, Admin!");
       navigate("/admin");
-    } else if (profile.role === "receptionist") {
-      toast.success("Welcome back, Receptionist!");
-      navigate("/receptionist");
     } else {
-      toast.error("Unauthorized.");
+      toast.error("Unauthorized access.");
       await supabase.auth.signOut();
     }
   };
@@ -59,7 +58,7 @@ const AdminLogin = () => {
           <span className="text-lg">←</span> Back to selection
         </button>
         <div className="text-center mb-8">
-          <h1 className="font-heading text-2xl font-bold text-foreground">Admin Login</h1>
+          <h1 className="font-heading text-2xl font-bold text-foreground">Receptionist Login</h1>
           <p className="font-body text-sm text-muted-foreground mt-1">{hotelConfig.fullName}</p>
         </div>
 
@@ -73,7 +72,7 @@ const AdminLogin = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="your@email.com"
+              placeholder="receptionist@hotel.com"
               className="w-full px-4 py-2.5 rounded-md border border-input bg-background font-body text-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none"
             />
           </div>
@@ -103,4 +102,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin;
+export default ReceptionistLogin;

@@ -125,7 +125,7 @@ const BookingSection = () => {
   today.setHours(0, 0, 0, 0);
 
   return (
-    <section id="booking" className="py-20 bg-warm-dark">
+    <section id="booking" className="py-32 bg-warm-dark relative overflow-hidden">
       <div className="container mx-auto px-4 max-w-3xl">
         <div className="text-center mb-12">
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Reservations</p>

@@ -5,7 +5,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
+import AboutPage from "./pages/AboutPage.tsx";
+import RoomsPage from "./pages/RoomsPage.tsx";
+import MenuPage from "./pages/MenuPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import LoginSelection from "./pages/LoginSelection.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import ReceptionistDashboard from "./pages/ReceptionistDashboard.tsx";
@@ -24,6 +28,10 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/rooms" element={<RoomsPage />} />
+            <Route path="/menu" element={<MenuPage />} />
+            <Route path="/auth" element={<LoginSelection />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/receptionist/login" element={<ReceptionistLogin />} />
