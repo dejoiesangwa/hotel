@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Image as ImageIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 type GalleryImage = {
   id: string;
@@ -8,22 +7,51 @@ type GalleryImage = {
   caption: string | null;
 };
 
-const GallerySection = () => {
-  const [images, setImages] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
+const staticImages: GalleryImage[] = [
+  {
+    id: "1",
+    image_url: "/src/assets/room-deluxe.jpg",
+    caption: "Deluxe Room",
+  },
+  {
+    id: "2",
+    image_url: "/src/assets/room-suite.jpg",
+    caption: "Executive Suite",
+  },
+  {
+    id: "3",
+    image_url: "/src/assets/room-twin.jpg",
+    caption: "Twin Room",
+  },
+  {
+    id: "4",
+    image_url: "/src/assets/hotel-hero.jpg",
+    caption: "Hotel Exterior",
+  },
+  {
+    id: "5",
+    image_url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800",
+    caption: "Luxury Lobby",
+  },
+  {
+    id: "6",
+    image_url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800",
+    caption: "Infinity Pool",
+  },
+  {
+    id: "7",
+    image_url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800",
+    caption: "Gourmet Dining",
+  },
+  {
+    id: "8",
+    image_url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=800",
+    caption: "Spa & Wellness",
+  },
+];
 
-  useEffect(() => {
-    supabase
-      .from("gallery_images")
-      .select("id, image_url, caption")
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        if (data) setImages(data as GalleryImage[]);
-        setLoading(false);
-      });
-  }, []);
+const GallerySection = () => {
+  const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
 
   return (
     <section id="gallery" className="py-20 bg-background">
@@ -36,16 +64,14 @@ const GallerySection = () => {
           </p>
         </div>
 
-        {loading ? (
-          <p className="text-center text-muted-foreground font-body">Loading…</p>
-        ) : images.length === 0 ? (
+        {staticImages.length === 0 ? (
           <div className="text-center py-12 bg-card border border-border rounded-lg max-w-md mx-auto">
             <ImageIcon className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="font-body text-muted-foreground text-sm">No photos yet. Check back soon.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {images.map((img) => (
+            {staticImages.map((img) => (
               <button
                 key={img.id}
                 onClick={() => setLightbox(img)}
