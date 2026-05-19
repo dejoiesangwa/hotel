@@ -63,7 +63,7 @@ const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
                   src={room.image_url || fallbackImages[room.name] || roomDeluxe}
                   alt={room.name}
                   loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
                 />
               </div>
               <div className="p-8">
