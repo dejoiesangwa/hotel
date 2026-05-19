@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import RoomsSection from "@/components/RoomsSection";
 import Footer from "@/components/Footer";
+import roomsHero from "@/assets/rooms-hero.jpg";
 
 const RoomsPage = () => {
   return (
@@ -8,9 +9,9 @@ const RoomsPage = () => {
       <Navbar />
       <div className="relative h-[60vh] min-h-[400px] overflow-hidden">
         <img
-          src="https://github.com/user-attachments/assets/c99ec32e-e2de-4444-aed6-d105a8358197"
+          src={roomsHero}
           alt="Luxury Rooms"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center px-4">
           <h1 className="font-heading text-4xl md:text-6xl font-bold text-white mb-4">Our Accommodations</h1>
