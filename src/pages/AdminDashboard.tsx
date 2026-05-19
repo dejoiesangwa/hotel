@@ -997,14 +997,14 @@ const AdminDashboard = () => {
                     <div key={s.id} className="bg-card border border-border rounded-lg p-4 flex items-center justify-between gap-4">
                       <div>
                         <p className="font-body font-semibold text-foreground">{s.full_name || "—"}</p>
-                        <p className="font-body text-sm text-muted-foreground">{s.email}</p>
+                        <p className="font-body text-sm text-muted-foreground">{s.user_id.slice(0, 8)}…</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={`text-xs font-body font-semibold px-2.5 py-1 rounded-full ${s.role === "admin" ? "bg-gold/20 text-gold" : "bg-blue-100 text-blue-700"}`}>
                           {s.role}
                         </span>
                         {s.role !== "admin" && (
-                          <button onClick={() => handleDeleteStaff(s.id, s.full_name || s.email)}
+                          <button onClick={() => handleDeleteStaff(s.id, s.full_name || "this user")}
                             className="p-2 text-muted-foreground hover:text-destructive rounded-md hover:bg-secondary">
                             <Trash2 className="w-4 h-4" />
                           </button>
