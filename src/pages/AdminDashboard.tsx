@@ -82,10 +82,11 @@ type MenuItem = {
 
 type StaffMember = {
   id: string;
-  email: string;
+  user_id: string;
   role: string;
   full_name: string | null;
   created_at: string;
+  updated_at: string;
 };
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
