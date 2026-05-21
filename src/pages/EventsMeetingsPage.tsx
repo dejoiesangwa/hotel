@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ContactSection from "@/components/ContactSection";
 import { useParams, Link } from "react-router-dom";
 import { Users, Calendar, Briefcase, Sparkles, Wifi, Coffee, Mic, Projector, Check } from "lucide-react";
 import heroImg from "@/assets/hotel-hero.jpg";
@@ -173,6 +174,7 @@ const EventsMeetingsPage = () => {
         </div>
       </section>
 
+      <ContactSection />
       <Footer />
     </div>
   );

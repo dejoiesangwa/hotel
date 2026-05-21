@@ -10,6 +10,8 @@ import RoomsPage from "./pages/RoomsPage.tsx";
 import RoomDetailPage from "./pages/RoomDetailPage.tsx";
 import MenuPage from "./pages/MenuPage.tsx";
 import EventsMeetingsPage from "./pages/EventsMeetingsPage.tsx";
+import GalleryPage from "./pages/GalleryPage.tsx";
+import AmenitiesPage from "./pages/AmenitiesPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import LoginSelection from "./pages/LoginSelection.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
@@ -33,6 +35,8 @@ const App = () => {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/rooms" element={<RoomsPage />} />
             <Route path="/rooms/:id" element={<RoomDetailPage />} />
+            <Route path="/amenities" element={<AmenitiesPage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/events/:type" element={<EventsMeetingsPage />} />
             <Route path="/auth" element={<LoginSelection />} />

@@ -4,16 +4,16 @@ import { hotelConfig } from "@/config/hotel";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Rooms", href: "/rooms" },
-  { label: "Gallery", href: "/#gallery" },
-  { label: "Amenities", href: "/#amenities" },
+  { label: "Rooms & Suites", href: "/rooms" },
+  { label: "Amenities", href: "/amenities" },
+  { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/#contact" },
 ];
 
 const services = [
   { label: "Dining (Menu)", href: "/menu" },
   { label: "Events", href: "/events/events" },
-  { label: "Meetings", href: "/events/meetings" },
+  { label: "Meetings & Conferences", href: "/events/meetings" },
 ];
 
 const Navbar = () => {
@@ -28,7 +28,7 @@ const Navbar = () => {
           {hotelConfig.name}<span className="text-gold"> {hotelConfig.nameSuffix}</span>
         </a>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
           {navLinks.map((l) => (
             <a
               key={l.label}
@@ -53,7 +53,7 @@ const Navbar = () => {
             </button>
             {servicesOpen && (
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3">
-                <div className="bg-warm-dark border border-gold/20 rounded-lg shadow-xl min-w-[180px] py-2">
+                <div className="bg-warm-dark border border-gold/20 rounded-lg shadow-xl min-w-[200px] py-2">
                   {services.map((s) => (
                     <a
                       key={s.label}

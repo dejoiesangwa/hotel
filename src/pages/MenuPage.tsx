@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { hotelConfig } from "@/config/hotel";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ContactSection from "@/components/ContactSection";
 import heroImg from "@/assets/hotel-hero.jpg";
 
 type Category = { id: string; name: string; sort_order: number };
@@ -176,6 +177,7 @@ const MenuPage = () => {
         )}
       </section>
 
+      <ContactSection />
       <Footer />
     </div>
   );

@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ContactSection from "@/components/ContactSection";
 import { hotelConfig } from "@/config/hotel";
 import heroImg from "@/assets/hotel-hero.jpg";
 import { Star, Target, Shield, Award, Users } from "lucide-react";
@@ -11,16 +12,10 @@ const AboutPage = () => {
 
       {/* Hero Section */}
       <section className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-        <img
-          src={heroImg}
-          alt="About Silver Hotel"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <img src={heroImg} alt="About Silver Hotel" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 text-center px-4">
-          <h1 className="font-heading text-5xl md:text-7xl font-bold text-white mb-4 animate-fade-in">
-            Our Story
-          </h1>
+          <h1 className="font-heading text-5xl md:text-7xl font-bold text-white mb-4 animate-fade-in">Our Story</h1>
           <p className="font-body text-gold-light tracking-[0.2em] uppercase text-sm animate-fade-in" style={{ animationDelay: "0.2s" }}>
             Excellence & Hospitality since 2010
           </p>
@@ -34,7 +29,6 @@ const AboutPage = () => {
             <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Heritage</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground">The Journey of {hotelConfig.name}</h2>
           </div>
-
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <p className="font-body text-muted-foreground leading-relaxed">
@@ -59,7 +53,6 @@ const AboutPage = () => {
             <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Philosophy</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">Our Core Values</h2>
           </div>
-
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
             {[
               { icon: Target, title: "Excellence", desc: "We strive for perfection in every detail of your stay." },
@@ -83,21 +76,20 @@ const AboutPage = () => {
       <section className="py-24 container mx-auto px-4">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl">
-             <img src={heroImg} alt="Hotel interior" className="w-full h-full object-cover" />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-             <div className="absolute bottom-8 left-8 right-8">
-                <div className="flex items-center gap-2 mb-2">
-                   {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 text-gold fill-gold" />)}
-                </div>
-                <p className="text-white font-heading text-xl font-bold">Consistently rated as Kigali's top Choice</p>
-             </div>
+            <img src={heroImg} alt="Hotel interior" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-8 left-8 right-8">
+              <div className="flex items-center gap-2 mb-2">
+                {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 text-gold fill-gold" />)}
+              </div>
+              <p className="text-white font-heading text-xl font-bold">Consistently rated as Kigali's top Choice</p>
+            </div>
           </div>
           <div className="space-y-8">
             <div>
               <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Why Stay With Us</p>
               <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">Unique Selling Points</h2>
             </div>
-
             <ul className="space-y-6">
               {[
                 { title: "Prime Location", desc: "Situated in Gasabo district, we are minutes away from the city center and major attractions." },
@@ -106,9 +98,7 @@ const AboutPage = () => {
                 { title: "Bespoke Service", desc: "From airport transfers to custom city tours, our concierge is at your service 24/7." },
               ].map((item, i) => (
                 <li key={i} className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center flex-shrink-0 text-gold font-bold text-xs">
-                    {i + 1}
-                  </div>
+                  <div className="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center flex-shrink-0 text-gold font-bold text-xs">{i + 1}</div>
                   <div>
                     <h4 className="font-body font-bold text-foreground mb-1">{item.title}</h4>
                     <p className="font-body text-sm text-muted-foreground">{item.desc}</p>
@@ -120,6 +110,7 @@ const AboutPage = () => {
         </div>
       </section>
 
+      <ContactSection />
       <Footer />
     </div>
   );

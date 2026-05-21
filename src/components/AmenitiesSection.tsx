@@ -1,4 +1,5 @@
-import { Wifi, Car, UtensilsCrossed, Waves, Wind, Accessibility, Coffee, Shield } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Wifi, Car, UtensilsCrossed, Waves, Wind, Accessibility, Coffee, Shield, ArrowRight } from "lucide-react";
 
 const amenities = [
   { icon: Wifi, label: "Free Wi-Fi", desc: "High-speed internet throughout" },
@@ -18,6 +19,9 @@ const AmenitiesSection = () => {
         <div className="text-center mb-14">
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">What We Offer</p>
           <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground">Hotel Amenities</h2>
+          <p className="font-body text-muted-foreground mt-3 max-w-lg mx-auto">
+            From poolside relaxation to fast fibre WiFi — everything you need for a perfect stay.
+          </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {amenities.map((a) => (
@@ -32,6 +36,15 @@ const AmenitiesSection = () => {
               <p className="font-body text-xs text-muted-foreground">{a.desc}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <Link
+            to="/amenities"
+            className="inline-flex items-center gap-2 border-2 border-gold text-gold px-8 py-3 rounded-md font-body font-semibold hover:bg-gold hover:text-white transition-all duration-300 text-sm uppercase tracking-widest"
+          >
+            View All Amenities <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

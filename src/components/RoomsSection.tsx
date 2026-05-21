@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Users, Bed } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { hotelConfig } from "@/config/hotel";
+import BookingModal from "@/components/BookingModal";
 import roomDeluxe from "@/assets/room-deluxe.jpg";
 import roomTwin from "@/assets/room-twin.jpg";
 import roomSuite from "@/assets/room-suite.jpg";
@@ -32,25 +33,27 @@ interface RoomsSectionProps {
 
 const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | undefined>();
 
   useEffect(() => {
     let query = supabase.from("rooms").select("*").eq("is_available", true).order("price");
-
-    if (limit) {
-      query = query.limit(limit);
-    }
-
-    query.then(({ data }) => {
-      if (data) setRooms(data as Room[]);
-    });
+    if (limit) query = query.limit(limit);
+    query.then(({ data }) => { if (data) setRooms(data as Room[]); });
   }, [limit]);
+
+  const openBooking = (roomId: string) => {
+    setSelectedRoomId(roomId);
+    setBookingOpen(true);
+  };
 
   return (
     <section id="rooms" className="py-24 bg-background">
+      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} preselectedRoomId={selectedRoomId} />
       <div className="container mx-auto px-4">
         <div className="text-center mb-14">
           <p className="text-gold font-body text-sm tracking-[0.2em] uppercase mb-2">Accommodation</p>
-          <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground">Our Rooms</h2>
+          <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground">Rooms & Suites</h2>
           <p className="font-body text-muted-foreground mt-3 max-w-lg mx-auto">
             Each room is designed to offer you the ultimate comfort during your stay in {hotelConfig.city}.
           </p>
@@ -78,7 +81,6 @@ const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
                   </div>
                 </Link>
                 <p className="font-body text-sm text-muted-foreground mb-6 line-clamp-2">{room.description}</p>
-
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                   <span className="flex items-center gap-1.5 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full font-body font-medium">
                     <Users className="w-4 h-4" />
@@ -88,21 +90,21 @@ const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
                     <Bed className="w-4 h-4" /> {room.bed_type}
                   </span>
                 </div>
-
                 <div className="flex flex-wrap gap-2 mb-5">
                   {room.features.map((f) => (
-                    <span key={f} className="text-xs font-body bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">
-                      {f}
-                    </span>
+                    <span key={f} className="text-xs font-body bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">{f}</span>
                   ))}
                 </div>
                 <div className="mt-auto grid grid-cols-2 gap-2">
                   <Link to={`/rooms/${room.id}`} className="block text-center border border-gold text-gold px-4 py-2.5 rounded-md font-body font-medium text-sm hover:bg-gold/10 transition-colors">
                     View Details
                   </Link>
-                  <Link to="/#booking" className="block text-center gold-gradient px-4 py-2.5 rounded-md font-body font-medium text-primary-foreground text-sm hover:opacity-90 transition-opacity">
+                  <button
+                    onClick={() => openBooking(room.id)}
+                    className="block text-center gold-gradient px-4 py-2.5 rounded-md font-body font-medium text-primary-foreground text-sm hover:opacity-90 transition-opacity"
+                  >
                     Book Now
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -111,11 +113,8 @@ const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
 
         {showViewAll && (
           <div className="mt-16 text-center">
-            <a
-              href="/rooms"
-              className="inline-block px-10 py-3.5 rounded-md border-2 border-gold text-gold font-body font-semibold hover:bg-gold hover:text-white transition-all duration-300 uppercase tracking-widest text-xs"
-            >
-              View All Rooms
+            <a href="/rooms" className="inline-block px-10 py-3.5 rounded-md border-2 border-gold text-gold font-body font-semibold hover:bg-gold hover:text-white transition-all duration-300 uppercase tracking-widest text-xs">
+              View All Rooms & Suites
             </a>
           </div>
         )}
