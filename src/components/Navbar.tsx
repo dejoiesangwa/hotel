@@ -1,24 +1,30 @@
 import { useState } from "react";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { hotelConfig } from "@/config/hotel";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
   { label: "Rooms", href: "/rooms" },
-  { label: "Menu", href: "/menu" },
   { label: "Gallery", href: "/#gallery" },
   { label: "Amenities", href: "/#amenities" },
   { label: "Contact", href: "/#contact" },
 ];
 
+const services = [
+  { label: "Dining (Menu)", href: "/menu" },
+  { label: "Events", href: "/events/events" },
+  { label: "Meetings", href: "/events/meetings" },
+];
+
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-warm-dark/90 backdrop-blur-md border-b border-gold/20">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
-        <a href="#" className="font-heading text-xl font-bold text-primary-foreground">
+        <a href="/" className="font-heading text-xl font-bold text-primary-foreground">
           {hotelConfig.name}<span className="text-gold"> {hotelConfig.nameSuffix}</span>
         </a>
 
@@ -32,6 +38,35 @@ const Navbar = () => {
               {l.label}
             </a>
           ))}
+
+          {/* Our Services dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setServicesOpen(true)}
+            onMouseLeave={() => setServicesOpen(false)}
+          >
+            <button
+              onClick={() => setServicesOpen((s) => !s)}
+              className="font-body text-sm text-nav-link hover:text-nav-link-hover transition-colors tracking-wide flex items-center gap-1"
+            >
+              Our Services <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+            {servicesOpen && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3">
+                <div className="bg-warm-dark border border-gold/20 rounded-lg shadow-xl min-w-[180px] py-2">
+                  {services.map((s) => (
+                    <a
+                      key={s.label}
+                      href={s.href}
+                      className="block px-4 py-2 font-body text-sm text-nav-link hover:text-gold hover:bg-gold/5 transition-colors whitespace-nowrap"
+                    >
+                      {s.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="hidden md:flex items-center gap-4">
@@ -40,7 +75,7 @@ const Navbar = () => {
             {hotelConfig.phone}
           </a>
           <a
-            href="#booking"
+            href="/#booking"
             className="gold-gradient px-5 py-2 rounded-md text-sm font-body font-medium text-primary-foreground"
           >
             Book Now
@@ -68,8 +103,31 @@ const Navbar = () => {
               {l.label}
             </a>
           ))}
+
+          <button
+            onClick={() => setMobileServicesOpen((s) => !s)}
+            className="w-full flex items-center justify-between py-3 font-body text-nav-link hover:text-nav-link-hover transition-colors border-b border-gold/10"
+          >
+            Our Services
+            <ChevronDown className={`w-4 h-4 transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`} />
+          </button>
+          {mobileServicesOpen && (
+            <div className="pl-4 border-b border-gold/10">
+              {services.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  onClick={() => setOpen(false)}
+                  className="block py-2 font-body text-sm text-nav-link/80 hover:text-gold transition-colors"
+                >
+                  {s.label}
+                </a>
+              ))}
+            </div>
+          )}
+
           <a
-            href="#booking"
+            href="/#booking"
             onClick={() => setOpen(false)}
             className="block mt-4 text-center gold-gradient px-5 py-2.5 rounded-md font-body font-medium text-primary-foreground"
           >
