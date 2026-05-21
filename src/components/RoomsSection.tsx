@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Users, Bed } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { hotelConfig } from "@/config/hotel";
@@ -57,17 +58,17 @@ const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
 
         <div className={`grid gap-10 ${limit ? "md:grid-cols-2 max-w-5xl mx-auto" : "md:grid-cols-2 lg:grid-cols-3"}`}>
           {rooms.map((room) => (
-            <div key={room.id} className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
-              <div className="relative overflow-hidden h-64">
+            <div key={room.id} className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-2xl hover:scale-105 transition-all duration-300 group flex flex-col">
+              <Link to={`/rooms/${room.id}`} className="block relative overflow-hidden h-64">
                 <img
                   src={room.image_url || fallbackImages[room.name] || roomDeluxe}
                   alt={room.name}
                   loading="lazy"
                   className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
                 />
-              </div>
-              <div className="p-8">
-                <div className="flex justify-between items-start gap-2 mb-3">
+              </Link>
+              <div className="p-8 flex-1 flex flex-col">
+                <Link to={`/rooms/${room.id}`} className="flex justify-between items-start gap-2 mb-3">
                   <h3 className="font-heading text-xl font-bold text-foreground group-hover:text-gold transition-colors">{room.name}</h3>
                   <div className="text-right">
                     <span className="block font-body text-lg font-bold text-gold">
@@ -75,10 +76,9 @@ const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
                     </span>
                     <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">per night</span>
                   </div>
-                </div>
+                </Link>
                 <p className="font-body text-sm text-muted-foreground mb-6 line-clamp-2">{room.description}</p>
 
-                {/* Capacity badge */}
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                   <span className="flex items-center gap-1.5 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full font-body font-medium">
                     <Users className="w-4 h-4" />
@@ -96,9 +96,14 @@ const RoomsSection = ({ limit, showViewAll }: RoomsSectionProps) => {
                     </span>
                   ))}
                 </div>
-                <a href="#booking" className="block text-center gold-gradient px-4 py-2.5 rounded-md font-body font-medium text-primary-foreground text-sm hover:opacity-90 transition-opacity">
-                  Book This Room
-                </a>
+                <div className="mt-auto grid grid-cols-2 gap-2">
+                  <Link to={`/rooms/${room.id}`} className="block text-center border border-gold text-gold px-4 py-2.5 rounded-md font-body font-medium text-sm hover:bg-gold/10 transition-colors">
+                    View Details
+                  </Link>
+                  <Link to="/#booking" className="block text-center gold-gradient px-4 py-2.5 rounded-md font-body font-medium text-primary-foreground text-sm hover:opacity-90 transition-opacity">
+                    Book Now
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

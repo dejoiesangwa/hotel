@@ -1,13 +1,15 @@
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import AboutPage from "./pages/AboutPage.tsx";
 import RoomsPage from "./pages/RoomsPage.tsx";
+import RoomDetailPage from "./pages/RoomDetailPage.tsx";
 import MenuPage from "./pages/MenuPage.tsx";
+import EventsMeetingsPage from "./pages/EventsMeetingsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import LoginSelection from "./pages/LoginSelection.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
@@ -30,7 +32,9 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/rooms" element={<RoomsPage />} />
+            <Route path="/rooms/:id" element={<RoomDetailPage />} />
             <Route path="/menu" element={<MenuPage />} />
+            <Route path="/events/:type" element={<EventsMeetingsPage />} />
             <Route path="/auth" element={<LoginSelection />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
