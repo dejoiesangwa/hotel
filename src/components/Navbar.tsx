@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { hotelConfig } from "@/config/hotel";
 
-const navLinks = [
+const navLinksBefore = [
   { label: "Home", href: "/" },
   { label: "Rooms & Suites", href: "/rooms" },
   { label: "Amenities", href: "/amenities" },
+];
+const navLinksAfter = [
   { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/#contact" },
 ];
@@ -29,7 +31,7 @@ const Navbar = () => {
         </a>
 
         <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((l) => (
+          {navLinksBefore.map((l) => (
             <a
               key={l.label}
               href={l.href}
@@ -67,6 +69,16 @@ const Navbar = () => {
               </div>
             )}
           </div>
+
+          {navLinksAfter.map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              className="font-body text-sm text-nav-link hover:text-nav-link-hover transition-colors tracking-wide"
+            >
+              {l.label}
+            </a>
+          ))}
         </div>
 
         <div className="hidden md:flex items-center gap-4">
@@ -93,7 +105,7 @@ const Navbar = () => {
 
       {open && (
         <div className="md:hidden bg-warm-dark/95 backdrop-blur-md border-t border-gold/20 px-4 pb-4">
-          {navLinks.map((l) => (
+          {[...navLinksBefore, ...navLinksAfter].map((l) => (
             <a
               key={l.label}
               href={l.href}
