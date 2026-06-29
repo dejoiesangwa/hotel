@@ -31,7 +31,7 @@ const Navbar = () => {
         </a>
 
         <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((l) => (
+          {navLinksBefore.map((l) => (
             <a
               key={l.label}
               href={l.href}
@@ -69,6 +69,16 @@ const Navbar = () => {
               </div>
             )}
           </div>
+
+          {navLinksAfter.map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              className="font-body text-sm text-nav-link hover:text-nav-link-hover transition-colors tracking-wide"
+            >
+              {l.label}
+            </a>
+          ))}
         </div>
 
         <div className="hidden md:flex items-center gap-4">
