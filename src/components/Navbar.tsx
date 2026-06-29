@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { hotelConfig } from "@/config/hotel";
 
-const navLinks = [
+const navLinksBefore = [
   { label: "Home", href: "/" },
   { label: "Rooms & Suites", href: "/rooms" },
   { label: "Amenities", href: "/amenities" },
+];
+const navLinksAfter = [
   { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/#contact" },
 ];
