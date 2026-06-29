@@ -105,7 +105,7 @@ const Navbar = () => {
 
       {open && (
         <div className="md:hidden bg-warm-dark/95 backdrop-blur-md border-t border-gold/20 px-4 pb-4">
-          {navLinks.map((l) => (
+          {[...navLinksBefore, ...navLinksAfter].map((l) => (
             <a
               key={l.label}
               href={l.href}
